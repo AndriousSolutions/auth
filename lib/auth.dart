@@ -19,12 +19,12 @@
 ///
 ///          Created  10 May 2018
 ///
+
 import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
 
 
 class Auth {
