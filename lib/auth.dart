@@ -38,21 +38,15 @@ class Auth {
       _googleSignIn = GoogleSignIn();
     }
   }
-
-  static dispose(){
-
-    _auth = null;
-
-    _googleSignIn = null;
-
-  }
-
   static FirebaseAuth _auth;
-
   static GoogleSignIn _googleSignIn;
+
 
   static FirebaseUser _user;
   get user => _user;
+
+
+  static dispose() => signOutWithGoogle();
 
 
   static Future<String> signInAnonymously() async {
@@ -86,17 +80,36 @@ class Auth {
 
 
   static Future<String> signInWithGoogle() async {
+//
+//    var currentUser = await _auth.currentUser();
+//    if(_user?.uid == currentUser.uid) return _user.uid;
+//
+//    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+//    final GoogleSignInAuthentication googleAuth =
+//    await googleUser.authentication;
+//
+//    var user = await _auth.signInWithGoogle(
+//      accessToken: googleAuth.accessToken,
+//      idToken: googleAuth.idToken,
+//    );
 
-    var currentUser = await _auth.currentUser();
-    if(_user?.uid == currentUser.uid) return _user.uid;
+    // Attempt to get the currently authenticated user
+    GoogleSignInAccount currentUser = _googleSignIn.currentUser;
+    if (currentUser == null) {
+      // Attempt to sign in without user interaction
+      currentUser = await _googleSignIn.signInSilently();
+    }
+    if (currentUser == null) {
+      // Force the user to interactively sign in
+      currentUser = await _googleSignIn.signIn();
+    }
 
-    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication googleAuth =
-    await googleUser.authentication;
+    final GoogleSignInAuthentication auth = await currentUser.authentication;
 
-    var user = await _auth.signInWithGoogle(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
+    // Authenticate with firebase
+    final FirebaseUser user = await _auth.signInWithGoogle(
+      idToken: auth.idToken,
+      accessToken: auth.accessToken,
     );
     
     assert(user.email != null);
@@ -104,10 +117,18 @@ class Auth {
     assert(!user.isAnonymous);
     assert(await user.getIdToken() != null);
 
-    currentUser = await _auth.currentUser();
-    assert(user.uid == currentUser.uid);
+    var thisUser = await _auth.currentUser();
+    assert(user.uid == thisUser.uid);
     _user = user;
     return user.uid;
+  }
+
+
+  static Future<Null> signOutWithGoogle() async {
+    // Sign out with Firebase
+    await _auth.signOut();
+    // Sign out with google
+    await _googleSignIn.signOut();
   }
 
   static bool isSignedIn() => _auth?.currentUser() != null;
