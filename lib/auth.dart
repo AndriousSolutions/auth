@@ -35,8 +35,6 @@ class Auth {
   static FirebaseUser _user;
   static get user => _user;
 
-  static String _tokenId;
-  static get idToken => _tokenId;
 
 
   static dispose() {
@@ -66,7 +64,9 @@ class Auth {
 
       final FirebaseUser user = await _auth.signInAnonymously();
 
-      _tokenId = await user?.getIdToken() ?? '';
+      assert(user != null, "Auth.signInAnonymously() returned null?!");
+
+      _idToken = await user?.getIdToken() ?? '';
 
       _isEmailVerified = user?.isEmailVerified;
 
@@ -115,6 +115,8 @@ class Auth {
       currentUser = await _googleSignIn.signIn();
     }
 
+    assert(currentUser != null, "Auth.signInWithGoogle() returned null?!");
+
     final GoogleSignInAuthentication auth = await currentUser.authentication;
 
     // Authenticate with firebase
@@ -137,7 +139,9 @@ class Auth {
 
     _isAnonymous = user?.isAnonymous;
 
-    _tokenId = await user?.getIdToken() ?? '';
+    _idToken = auth.idToken ?? await user?.getIdToken() ?? '';
+
+    _accessToken = auth.accessToken;
 
     var thisUser = await _auth.currentUser();
 
@@ -186,4 +190,10 @@ class Auth {
 
   static bool _isAnonymous = false;
   static bool get isAnonymous => _isAnonymous;
+
+  static String _idToken = '';
+  static String get idToken => _idToken;
+
+  static String _accessToken = '';
+  static String get accessToken => _accessToken;
 }
