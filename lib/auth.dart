@@ -29,76 +29,83 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class Auth {
   
-  static init() {
-
-    if(_auth == null){
-
-      _auth = FirebaseAuth.instance;
-
-      _googleSignIn = GoogleSignIn();
-    }
-  }
   static FirebaseAuth _auth;
   static GoogleSignIn _googleSignIn;
 
-
   static FirebaseUser _user;
-  get user => _user;
+  static get user => _user;
+
+  static String _tokenId;
+  static get idToken => _tokenId;
 
 
-  static dispose() => signOutWithGoogle();
+  static dispose() => signOut();
 
 
-  static Future<String> signInAnonymously() async {
-
-    final currentUser = await _auth.currentUser();
-    if(_user?.uid == currentUser.uid) return _user.uid;
-
-    var user = await _auth.signInAnonymously();
-    assert(user != null);
-    assert(user.isAnonymous);
-    assert(!user.isEmailVerified);
-    assert(await user.getIdToken() != null);
-
-    if (Platform.isIOS) {
-      // Anonymous auth doesn't show up as a provider on iOS
-      assert(user.providerData.isEmpty);
-    } else if (Platform.isAndroid) {
-
-      // Anonymous auth does show up as a provider on Android
-      assert(user.providerData.length == 1);
-      assert(user.providerData[0].providerId == 'firebase');
-      assert(user.providerData[0].uid != null);
-      assert(user.providerData[0].displayName == null);
-      assert(user.providerData[0].photoUrl == null);
-      assert(user.providerData[0].email == null);
+  static void _init(){
+    if(_auth == null) {
+      _auth = FirebaseAuth.instance;
+      _googleSignIn = GoogleSignIn();
     }
-    
-    _user = user;
-    return user.uid;
   }
 
 
-  static Future<String> signInWithGoogle() async {
-//
-//    var currentUser = await _auth.currentUser();
-//    if(_user?.uid == currentUser.uid) return _user.uid;
-//
-//    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-//    final GoogleSignInAuthentication googleAuth =
-//    await googleUser.authentication;
-//
-//    var user = await _auth.signInWithGoogle(
-//      accessToken: googleAuth.accessToken,
-//      idToken: googleAuth.idToken,
-//    );
+
+  /// Firebase Login.
+  static Future<bool> signInAnonymously() async {
+
+    _init();
+
+    final currentUser = await _auth.currentUser();
+
+    if(_user?.uid != currentUser.uid) {
+
+      final FirebaseUser user = await _auth.signInAnonymously();
+
+      _tokenId = await user?.getIdToken() ?? '';
+
+      _isEmailVerified = user?.isEmailVerified;
+
+      _isAnonymous = user?.isAnonymous;
+
+      if (Platform.isIOS) {
+        // Anonymous auth doesn't show up as a provider on iOS
+        assert(user?.providerData?.isEmpty == true);
+      } else if (Platform.isAndroid) {
+        // Anonymous auth does show up as a provider on Android
+        assert(user?.providerData?.length == 1);
+
+        _providerId = user?.providerData[0]?.providerId ?? '';
+
+        _uid = user?.providerData[0]?.uid ?? '';
+
+        _displayName = user?.providerData[0]?.displayName ?? '';
+
+        _email = user?.providerData[0]?.email ?? '';
+      }
+
+      _user = user;
+    }
+
+    var id = _user?.uid ?? '';
+
+    return id.isNotEmpty;
+  }
+
+
+
+  static Future<bool> signInWithGoogle() async {
+
+    _init();
 
     // Attempt to get the currently authenticated user
     GoogleSignInAccount currentUser = _googleSignIn.currentUser;
+
     if (currentUser == null) {
       // Attempt to sign in without user interaction
       currentUser = await _googleSignIn.signInSilently();
     }
+
     if (currentUser == null) {
       // Force the user to interactively sign in
       currentUser = await _googleSignIn.signIn();
@@ -111,20 +118,37 @@ class Auth {
       idToken: auth.idToken,
       accessToken: auth.accessToken,
     );
-    
-    assert(user.email != null);
-    assert(user.displayName != null);
-    assert(!user.isAnonymous);
-    assert(await user.getIdToken() != null);
+
+    _providerId = user?.providerId ?? '';
+
+    _uid = user?.uid ?? '';
+
+    _displayName = user?.displayName ?? '';
+
+    _photoUrl = user?.photoUrl ?? '';
+
+    _email = user?.email ?? '';
+
+    _isEmailVerified = _email.isNotEmpty;
+
+    _isAnonymous = user?.isAnonymous;
+
+    _tokenId = await user?.getIdToken() ?? '';
 
     var thisUser = await _auth.currentUser();
-    assert(user.uid == thisUser.uid);
+
+    assert(user?.uid == thisUser.uid);
+
     _user = user;
-    return user.uid;
+
+    var id = user?.uid ?? '';
+
+    return id.isNotEmpty;
   }
 
 
-  static Future<Null> signOutWithGoogle() async {
+
+  static Future<Null> signOut() async {
     // Sign out with Firebase
     await _auth.signOut();
     // Sign out with google
@@ -135,13 +159,37 @@ class Auth {
 
   static bool isLoggedIn() => _user != null;
 
-  static signOut() => _auth.signOut();
+
+  static String _providerId = '';
+  static String get providerId => _providerId;
+
+  static String _uid = '';
+  static String get uid => _uid;
+
+  static String _displayName = '';
+  static String get displayName => _displayName;
+
+  static String _photoUrl = '';
+  static String get photoUrl => _photoUrl;
+
+  static String _email = '';
+  static String get email => _email;
+
+  static bool _isEmailVerified = false;
+  static bool get isEmailVerified => _isEmailVerified;
+
+  static bool _isAnonymous = false;
+  static bool get isAnonymous => _isAnonymous;
+
 
   static String userProfile(String type) {
     return getProfile(_user, type);
   }
 
+
+
   static String getProfile(FirebaseUser user, String type) {
+
     if (user == null) {
       return '';
     }
@@ -191,49 +239,5 @@ class Auth {
     }
 
     return info;
-  }
-
-
-  static String getUid(){
-
-    String userId;
-
-    var user = getUser();
-
-    if (user == null){
-
-      userId = null;
-    }else{
-
-      userId = user.uid;
-    }
-
-    return userId;
-  }
-
-
-  static FirebaseUser getUser() {
-
-    return _user;
-  }
-
-
-  static String userEmail(){
-
-    return _user?.email;
-  }
-
-
-
-  static String userName(){
-
-    return _user?.displayName;
-  }
-
-
-
-  static String userPhoto(){
-
-    return _user?.photoUrl;
   }
 }
