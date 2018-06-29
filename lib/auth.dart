@@ -39,7 +39,11 @@ class Auth {
   static get idToken => _tokenId;
 
 
-  static dispose() => signOut();
+  static dispose() {
+    signOut();
+    _auth = null;
+    _googleSignIn = null;
+  }
 
 
   static void _init(){
@@ -149,14 +153,16 @@ class Auth {
 
 
   static Future<Null> signOut() async {
-    // Sign out with Firebase
+    // Sign out with FireBase
     await _auth.signOut();
     // Sign out with google
     await _googleSignIn.signOut();
   }
 
+  /// Google Signed in.
   static bool isSignedIn() => _auth?.currentUser() != null;
 
+  /// FireBase Logged in.
   static bool isLoggedIn() => _user != null;
 
 
@@ -180,64 +186,4 @@ class Auth {
 
   static bool _isAnonymous = false;
   static bool get isAnonymous => _isAnonymous;
-
-
-  static String userProfile(String type) {
-    return getProfile(_user, type);
-  }
-
-
-
-  static String getProfile(FirebaseUser user, String type) {
-
-    if (user == null) {
-      return '';
-    }
-
-    if (type == null) {
-      return '';
-    }
-
-    String info = '';
-
-    String holder = '';
-
-    // Always return 'the last' available item.
-    for (UserInfo profile in user.providerData.reversed) {
-      switch (type.trim().toLowerCase()) {
-        case "provider":
-          holder = profile.providerId;
-
-          break;
-        case "userid":
-          holder = profile.uid;
-
-          break;
-        case "name":
-          holder = profile.displayName;
-
-          break;
-        case "email":
-          holder = profile.email;
-
-          break;
-        case "photo":
-          try {
-            holder = profile.photoUrl.toString();
-          } catch (ex) {
-            holder = "";
-          }
-
-          break;
-        default:
-          holder = "";
-      }
-
-      if (holder != null && holder.isNotEmpty) {
-        info = holder;
-      }
-    }
-
-    return info;
-  }
 }
