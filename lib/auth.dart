@@ -25,6 +25,7 @@ import 'package:meta/meta.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 typedef void GoogleListener(GoogleSignInAccount event);
 typedef void FireBaseListener(FirebaseUser user);
@@ -41,7 +42,10 @@ class Auth {
 
   static Exception _ex;
   static get ex => _ex;
-  static get message => _ex.toString() ?? 'No Message';
+  static get message => _ex.toString() ?? '';
+
+  static StreamSubscription<FirebaseUser> _firebaseListener;
+  static StreamSubscription<GoogleSignInAccount> _googleListener;
 
 
 
@@ -87,7 +91,7 @@ class Auth {
     void listen(GoogleSignInAccount event),
     Function onError,
     void onDone(),
-    bool cancelOnError,}){
+    bool cancelOnError,}) async {
 
     assert(_googleSignIn != null, "Class Auth: _googleSignIn must be initialized!");
 
@@ -96,7 +100,8 @@ class Auth {
     _onDone = onDone ?? _onDone;
     _cancelOnError = cancelOnError ?? _cancelOnError;
 
-    _googleSignIn.onCurrentUserChanged.listen(
+    await _googleListener?.cancel();
+    _googleListener = _googleSignIn.onCurrentUserChanged.listen(
         _listGoogleListeners,
         onError: _onError,
         onDone: _onDone,
@@ -122,10 +127,11 @@ class Auth {
 
 
 
-  static initFireBase([void listener(FirebaseUser user)]){
+  static initFireBase([void listener(FirebaseUser user)]) async {
     if(_fireBaseAuth == null) {
       _fireBaseAuth = FirebaseAuth.instance;
-      _fireBaseAuth.onAuthStateChanged.listen(_listFireBaseListeners);
+      await _firebaseListener?.cancel();
+      _firebaseListener = _fireBaseAuth.onAuthStateChanged.listen(_listFireBaseListeners);
     }
     if(listener != null){
       _fireBaseListeners.add(listener);
@@ -161,6 +167,10 @@ class Auth {
     _googleSignIn = null;
     _fireBaseListeners = null;
     _googleListeners = null;
+    _googleListener?.cancel();
+    _googleListener = null;
+    _firebaseListener?.cancel();
+    _firebaseListener = null;
   }
 
 
@@ -280,6 +290,17 @@ class Auth {
       return user != null;
     }
 
+
+    static Future<bool> loginWithFacebook() async {
+      var result;
+      try {
+        result = await FacebookLogin().logInWithReadPermissions(['email']);
+      }catch(ex){
+        _ex = ex;
+        return false;
+      }
+      return await signInWithFacebook(accessToken: result.accessToken.token);
+    }
 
 
     static Future<bool> signInWithFacebook({@required String accessToken, void listener(FirebaseUser user)}) async {
@@ -494,7 +515,7 @@ class Auth {
               });
         } catch (ex) {
           _ex = ex;
-          if(message.indexOf('INTERNAL') > 0 ){
+          if(ex.toString().indexOf('INTERNAL') > 0 ){
             // Simply run it again to make it work.
             return signInSilently();
           }else {
@@ -536,7 +557,7 @@ class Auth {
               });
         } catch (ex) {
           _ex = ex;
-          if(message.indexOf('INTERNAL') > 0 ){
+          if(ex.toString().indexOf('INTERNAL') > 0 ){
             // Simply run it again to make it work.
             return signIn();
           }else {
