@@ -25,7 +25,7 @@ import 'package:meta/meta.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+//import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 typedef void GoogleListener(GoogleSignInAccount event);
 typedef void FireBaseListener(FirebaseUser user);
@@ -160,16 +160,16 @@ class Auth {
 
 
 
-  static dispose() {
+  static dispose() async {
     signOut();
     _user = null;
     _fireBaseAuth = null;
     _googleSignIn = null;
     _fireBaseListeners = null;
     _googleListeners = null;
-    _googleListener?.cancel();
+    await _googleListener?.cancel();
+    await _firebaseListener?.cancel();
     _googleListener = null;
-    _firebaseListener?.cancel();
     _firebaseListener = null;
   }
 
@@ -261,11 +261,11 @@ class Auth {
 
 
 
-    static Future<List<String>> fetchProvidersForEmail({@required String email,}) => _fireBaseAuth?.fetchProvidersForEmail(email: email);
+    static Future<List<String>> fetchProvidersForEmail({@required String email,}) async => _fireBaseAuth?.fetchProvidersForEmail(email: email);
 
 
 
-    static  Future<void> sendPasswordResetEmail({@required String email,}) => _fireBaseAuth?.sendPasswordResetEmail(email: email);
+    static  Future<void> sendPasswordResetEmail({@required String email,}) async => _fireBaseAuth?.sendPasswordResetEmail(email: email);
 
 
 
@@ -291,16 +291,18 @@ class Auth {
     }
 
 
-    static Future<bool> loginWithFacebook() async {
-      var result;
-      try {
-        result = await FacebookLogin().logInWithReadPermissions(['email']);
-      }catch(ex){
-        _ex = ex;
-        return false;
-      }
-      return await signInWithFacebook(accessToken: result.accessToken.token);
-    }
+
+//    static Future<bool> loginWithFacebook() async {
+//      var result;
+//      try {
+//        result = await FacebookLogin().logInWithReadPermissions(['email']);
+//      }catch(ex){
+//        _ex = ex;
+//        return false;
+//      }
+//      return await signInWithFacebook(accessToken: result.accessToken.token);
+//    }
+
 
 
     static Future<bool> signInWithFacebook({@required String accessToken, void listener(FirebaseUser user)}) async {
@@ -560,7 +562,7 @@ class Auth {
           if(ex.toString().indexOf('INTERNAL') > 0 ){
             // Simply run it again to make it work.
             return signIn();
-          }else {
+          }else{
             currentUser = null;
           }
         }
