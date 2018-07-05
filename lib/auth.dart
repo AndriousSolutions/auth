@@ -29,7 +29,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 typedef void GoogleListener(GoogleSignInAccount event);
 typedef void FireBaseListener(FirebaseUser user);
-
+typedef Future<FirebaseUser> FireBaseUser();
 
 
 class Auth {
@@ -261,34 +261,55 @@ class Auth {
 
 
 
-    static Future<List<String>> fetchProvidersForEmail({@required String email,}) async => _fireBaseAuth?.fetchProvidersForEmail(email: email);
+    static Future<List<String>> fetchProvidersForEmail({@required String email,}) async {
 
+      List<String> providers;
 
-
-    static  Future<void> sendPasswordResetEmail({@required String email,}) async => _fireBaseAuth?.sendPasswordResetEmail(email: email);
-
-
-
-    static  Future<bool> signInWithEmailAndPassword({@required String email, @required String password,void listener(FirebaseUser user)}) async {
-
-      initFireBase(listener);
-
-      final loggedIn = await alreadyLoggedIn();
-      if(loggedIn) return loggedIn;
-
-      FirebaseUser user;
       try{
-        user = await _fireBaseAuth.signInWithEmailAndPassword(email: email, password: password).then(
-            (usr){
-              _setUserFromFireBase(usr);
-              return usr;
-            });
-      } catch (ex) {
+        providers = await _fireBaseAuth?.fetchProvidersForEmail(email: email);
+      }catch(ex){
         _ex = ex;
-        user = null;
+        providers = null;
       }
-      return user != null;
+       return providers;
     }
+
+
+
+    static  Future<bool> sendPasswordResetEmail({@required String email,}) async{
+       bool reset;
+       try{
+          await _fireBaseAuth?.sendPasswordResetEmail(email: email);
+          reset = true;
+       }catch(ex){
+          _ex = ex;
+          reset = false;
+       }
+       return reset;
+    }
+
+
+
+      static  Future<bool> signInWithEmailAndPassword({@required String email, @required String password,void listener(FirebaseUser user)}) async {
+
+        initFireBase(listener);
+
+        final loggedIn = await alreadyLoggedIn();
+        if(loggedIn) return loggedIn;
+
+        FirebaseUser user;
+        try{
+          user = await _fireBaseAuth.signInWithEmailAndPassword(email: email, password: password).then(
+              (usr){
+                _setUserFromFireBase(usr);
+                return usr;
+              });
+        } catch (ex) {
+          _ex = ex;
+          user = null;
+        }
+        return user != null;
+      }
 
 
 
@@ -305,419 +326,444 @@ class Auth {
 
 
 
-    static Future<bool> signInWithFacebook({@required String accessToken, void listener(FirebaseUser user)}) async {
+      static Future<bool> signInWithFacebook({@required String accessToken, void listener(FirebaseUser user)}) async {
 
-      initFireBase(listener);
+        initFireBase(listener);
 
-      final loggedIn = await alreadyLoggedIn();
-      if(loggedIn) return loggedIn;
+        final loggedIn = await alreadyLoggedIn();
+        if(loggedIn) return loggedIn;
 
-      FirebaseUser user;
-      try{
-        user = await _fireBaseAuth.signInWithFacebook(accessToken: accessToken).then(
-            (usr){
-              _setUserFromFireBase(usr);
-              return usr;
-            });
-      } catch (ex) {
-        _ex = ex;
-        user = null;
-      }
-      return user != null;
-    }
-
-
-
-    static Future<bool> signInWithTwitter({@required String authToken, @required String authTokenSecret, void listener(FirebaseUser user)}) async {
-
-      initFireBase(listener);
-
-      final loggedIn = await alreadyLoggedIn();
-      if(loggedIn) return loggedIn;
-
-      FirebaseUser user;
-      try{
-        user = await _fireBaseAuth.signInWithTwitter(authToken: authToken, authTokenSecret: authTokenSecret).then(
-            (usr){
-              _setUserFromFireBase(usr);
-              return usr;
-            });
-      } catch (ex) {
-        _ex = ex;
-        user = null;
-      }
-      return user != null;
-    }
-
-
-
-    static Future<bool> signInWithGoogle({@required String idToken, @required String accessToken, void listener(FirebaseUser user)}) async {
-
-      initFireBase(listener);
-
-      final loggedIn = await alreadyLoggedIn();
-      if(loggedIn) return loggedIn;
-
-      FirebaseUser user;
-      try{
-        user = await _fireBaseAuth.signInWithGoogle(idToken: idToken, accessToken: accessToken).then(
-            (usr){
-              _setUserFromFireBase(usr);
-              return usr;
-            });
-      } catch (ex) {
-        _ex = ex;
-        user = null;
-      }
-      return user != null;
-    }
-
-
-
-    static Future<bool> signInWithCustomToken({@required String token, void listener(FirebaseUser user)}) async {
-
-      initFireBase(listener);
-
-      final loggedIn = await alreadyLoggedIn();
-      if(loggedIn) return loggedIn;
-
-      FirebaseUser user;
-      try{
-        user = await _fireBaseAuth.signInWithCustomToken(token: token).then(
-            (usr){
-              _setUserFromFireBase(usr);
-              return usr;
-            });
-      } catch (ex) {
-        _ex = ex;
-        user = null;
-      }
-      return user != null;
-    }
-
-
-
-    static Future<FirebaseUser> fireBaseUser() => _fireBaseAuth.currentUser();
-
-    static Future<FirebaseUser> linkWithEmailAndPassword({@required String email,@required String password,}) => _fireBaseAuth?.linkWithEmailAndPassword(email: email, password: password);
-
-    static Future<void> updateProfile(UserUpdateInfo userUpdateInfo) => _fireBaseAuth?.updateProfile(userUpdateInfo);
-
-    static Future<FirebaseUser> linkWithGoogleCredential({@required String idToken,@required String accessToken,}) => _fireBaseAuth?.linkWithGoogleCredential(idToken: idToken, accessToken: accessToken);
-
-    static  Future<FirebaseUser> linkWithFacebookCredential({@required String accessToken,}) => _fireBaseAuth?.linkWithFacebookCredential(accessToken: accessToken);
-
-
-
-    static Future<bool> _setUserFromFireBase(FirebaseUser user) async {
-
-      _idToken = await user?.getIdToken() ?? '';
-
-      _accessToken = '';
-
-      _isEmailVerified = user?.isEmailVerified ?? false;
-
-      _isAnonymous = user?.isAnonymous ?? true;
-
-      _providerId = user?.providerData[0]?.providerId ?? '';
-
-      _uid = user?.providerData[0]?.uid ?? '';
-
-      _displayName = user?.providerData[0]?.displayName ?? '';
-
-      _photoUrl = '';
-
-      _email = user?.providerData[0]?.email ?? '';
-
-      _user = user;
-
-      var id = _user?.uid ?? '';
-
-      return id.isNotEmpty;
-    }
-
-
-
-    /// Log into Google and into Firebase.
-    static Future<bool> logInWithGoogle({
-      SignInOption signInOption,
-      List<String> scopes,
-      String hostedDomain,
-      Null listen(GoogleSignInAccount event),
-      Function onError,
-      void onDone(),
-      bool cancelOnError,
-      Null listener(FirebaseUser user),
-    }) async {
-
-      init(signInOption: signInOption,scopes: scopes, hostedDomain: hostedDomain, listen: listen, onError: onError, onDone: onDone, cancelOnError: cancelOnError, listener: listener);
-
-      // Attempt to get the currently authenticated user
-      GoogleSignInAccount currentUser = _googleSignIn.currentUser;
-
-      if (currentUser == null) {
-        try {
-          // Attempt to sign in without user interaction
-          currentUser = await _googleSignIn.signInSilently().then(
-              (user){
-                _setFireBaseUserFromGoogle(user);
-                return user;
-              });
-        }catch(ex){
-          _ex = ex;
-          currentUser = null;
-        }
-      }
-
-      if (currentUser == null) {
-        try {
-          // Force the user to interactively sign in
-          currentUser = await _googleSignIn.signIn().then(
-              (user){
-                _setFireBaseUserFromGoogle(user);
-                return user;
-              });
-        }catch(ex){
-          _ex = ex;
-          currentUser = null;
-        }
-      }else{
-        final loggedIn = await alreadyLoggedIn(currentUser);
-        if(!loggedIn) await _setFireBaseUserFromGoogle(currentUser);
-      }
-      return currentUser != null;
-    }
-
-
-
-    /// Sign into Google
-    static Future<bool> signInSilently({
-      SignInOption signInOption,
-      List<String> scopes,
-      String hostedDomain,
-      Null listen(GoogleSignInAccount event),
-      Function onError,
-      void onDone(),
-      bool cancelOnError,
-      bool suppressErrors = true,
-    }) async {
-
-      init(signInOption: signInOption,scopes: scopes, hostedDomain: hostedDomain, listen: listen, onError: onError, onDone: onDone, cancelOnError: cancelOnError,);
-
-      // Attempt to get the currently authenticated user
-      GoogleSignInAccount currentUser = _googleSignIn.currentUser;
-
-      if (currentUser == null) {
-        try {
-          // Attempt to sign in without user interaction
-          currentUser = await _googleSignIn.signInSilently(suppressErrors: suppressErrors).then(
-              (user){
-                _setFireBaseUserFromGoogle(user);
-                return user;
-              });
-        } catch (ex) {
-          _ex = ex;
-          if(ex.toString().indexOf('INTERNAL') > 0 ){
-            // Simply run it again to make it work.
-            return signInSilently();
-          }else {
-            currentUser = null;
-          }
-        }
-      }else{
-        final loggedIn = await alreadyLoggedIn(currentUser);
-        if(!loggedIn) await _setFireBaseUserFromGoogle(currentUser);
-      }
-      return currentUser != null;
-    }
-
-
-
-    /// Sign into Google
-    static Future<bool> signIn({
-      SignInOption signInOption,
-      List<String> scopes,
-      String hostedDomain,
-      Null listen(GoogleSignInAccount event),
-      Function onError,
-      void onDone(),
-      bool cancelOnError,
-    }) async {
-
-      init(signInOption: signInOption,scopes: scopes, hostedDomain: hostedDomain, listen: listen, onError: onError, onDone: onDone, cancelOnError: cancelOnError,);
-
-      // Attempt to get the currently authenticated user
-      GoogleSignInAccount currentUser = _googleSignIn.currentUser;
-
-      if (currentUser == null) {
-        try {
-          // Force the user to interactively sign in
-          currentUser = await _googleSignIn.signIn().then(
-              (user){
-                _setFireBaseUserFromGoogle(user);
-                return user;
-              });
-        } catch (ex) {
-          _ex = ex;
-          if(ex.toString().indexOf('INTERNAL') > 0 ){
-            // Simply run it again to make it work.
-            return signIn();
-          }else{
-            currentUser = null;
-          }
-        }
-      }else{
-        final loggedIn = await alreadyLoggedIn(currentUser);
-        if(!loggedIn) await _setFireBaseUserFromGoogle(currentUser);
-      }
-      return currentUser != null;
-    }
-
-
-
-    static Future<bool> _setFireBaseUserFromGoogle(GoogleSignInAccount currentUser) async {
-
-      final GoogleSignInAuthentication auth = await currentUser?.authentication;
-
-      FirebaseUser user;
-
-      if(auth == null){
-        user = null;
-      }else {
+        FirebaseUser user;
         try{
-          // Authenticate with FireBase
-          user = await _fireBaseAuth.signInWithGoogle(
-            idToken: auth.idToken,
-            accessToken: auth.accessToken,
-          );
+          user = await _fireBaseAuth.signInWithFacebook(accessToken: accessToken).then(
+              (usr){
+                _setUserFromFireBase(usr);
+                return usr;
+              });
+        } catch (ex) {
+          _ex = ex;
+          user = null;
+        }
+        return user != null;
+      }
+
+
+
+      static Future<bool> signInWithTwitter({@required String authToken, @required String authTokenSecret, void listener(FirebaseUser user)}) async {
+
+        initFireBase(listener);
+
+        final loggedIn = await alreadyLoggedIn();
+        if(loggedIn) return loggedIn;
+
+        FirebaseUser user;
+        try{
+          user = await _fireBaseAuth.signInWithTwitter(authToken: authToken, authTokenSecret: authTokenSecret).then(
+              (usr){
+                _setUserFromFireBase(usr);
+                return usr;
+              });
+        } catch (ex) {
+          _ex = ex;
+          user = null;
+        }
+        return user != null;
+      }
+
+
+
+      static Future<bool> signInWithGoogle({@required String idToken, @required String accessToken, void listener(FirebaseUser user)}) async {
+
+        initFireBase(listener);
+
+        final loggedIn = await alreadyLoggedIn();
+        if(loggedIn) return loggedIn;
+
+        FirebaseUser user;
+        try{
+          user = await _fireBaseAuth.signInWithGoogle(idToken: idToken, accessToken: accessToken).then(
+              (usr){
+                _setUserFromFireBase(usr);
+                return usr;
+              });
+        } catch (ex) {
+          _ex = ex;
+          user = null;
+        }
+        return user != null;
+      }
+
+
+
+      static Future<bool> signInWithCustomToken({@required String token, void listener(FirebaseUser user)}) async {
+
+        initFireBase(listener);
+
+        final loggedIn = await alreadyLoggedIn();
+        if(loggedIn) return loggedIn;
+
+        FirebaseUser user;
+        try{
+          user = await _fireBaseAuth.signInWithCustomToken(token: token).then(
+              (usr){
+                _setUserFromFireBase(usr);
+                return usr;
+              });
+        } catch (ex) {
+          _ex = ex;
+          user = null;
+        }
+        return user != null;
+      }
+
+
+
+      static Future<FirebaseUser> fireBaseUser() async {
+         FirebaseUser user;
+         try {
+            user = await _fireBaseAuth?.currentUser();
+         }catch(ex){
+            _ex = ex;
+            user = null;
+         }
+         return user;
+      }
+
+
+
+      static Future<FirebaseUser> linkWithEmailAndPassword({@required String email,@required String password,}) async {
+        FirebaseUser user;
+        try {
+           user = await _fireBaseAuth?.linkWithEmailAndPassword(email: email, password: password);
         }catch(ex){
           _ex = ex;
           user = null;
         }
+        return user;
       }
 
-      _idToken = auth?.idToken ?? await user?.getIdToken() ?? '';
 
-      _accessToken = auth?.accessToken ?? '';
 
-      _isEmailVerified = user?.email?.isNotEmpty ?? false;
-
-      _isAnonymous = user?.isAnonymous ?? true;
-
-      _providerId = user?.providerId ?? '';
-
-      _uid = user?.uid ?? '';
-
-      _displayName = user?.displayName ?? '';
-
-      _photoUrl = user?.photoUrl ?? '';
-
-      _email = user?.email ?? '';
-
-      _user = user;
-
-      final id = user?.uid ?? '';
-
-      return id.isNotEmpty;
-    }
+      static Future<void> updateProfile(UserUpdateInfo userUpdateInfo) => _fireBaseAuth?.updateProfile(userUpdateInfo);
 
 
 
-    static Future<Null> signOut() async {
-      // Sign out with FireBase
-      await _fireBaseAuth.signOut();
-      // Sign out with google
-      // Does not disconnect however.
-      await _googleSignIn.signOut();
-    }
-
-
-
-    static Future<GoogleSignInAccount> disconnect(){
-      // Sign out with FireBase
-      _fireBaseAuth.signOut();
-      // Sign out with google
-      _googleSignIn.signOut();
-      // Disconnect from Google
-      return _googleSignIn.disconnect();
-    }
-
-
-
-    /// Google Signed in.
-    static bool isSignedIn() => _fireBaseAuth?.currentUser() != null;
-
-    /// FireBase Logged in.
-    static bool isLoggedIn() => _user != null;
-
-    /// Access to the GoogleSignIn Object
-    static GoogleSignIn get googleSignIn{
-      init();
-      return _googleSignIn;
-    }
-
-
-
-    /// The currently signed in account, or null if the user is signed out.
-    static  GoogleSignInAccount get googleUser {
-      init();
-      return _googleSignIn?.currentUser;
-    }
-
-
-
-    static Future<bool> sendEmailVerification() async {
-      bool send;
-      try{
-        await _user?.sendEmailVerification();
-        send = true;
-      }catch(ex){
-        _ex = ex;
-        send = false;
+      static Future<FirebaseUser> linkWithGoogleCredential({@required String idToken,@required String accessToken,}) async {
+        FirebaseUser user;
+        try {
+           user = await _fireBaseAuth?.linkWithGoogleCredential(idToken: idToken, accessToken: accessToken);
+        }catch(ex){
+          _ex = ex;
+          user = null;
+        }
+        return user;
       }
-      return send;
-    }
 
 
-    /// refreshes the data of the current user
-    static Future<bool> reload() async {
-      bool reload;
-      try {
-        await _user?.reload();
-        reload = true;
-      }catch(ex){
-        _ex = ex;
-        reload = false;
+
+      static  Future<FirebaseUser> linkWithFacebookCredential({@required String accessToken,}) async {
+        FirebaseUser user;
+        try {
+           user = await _fireBaseAuth?.linkWithFacebookCredential(accessToken: accessToken);
+        }catch(ex){
+          _ex = ex;
+          user = null;
+        }
+        return user;
       }
-      return reload;
-    }
 
 
 
-  static String _providerId = '';
-  static String get providerId => _providerId;
+      static Future<bool> _setUserFromFireBase(FirebaseUser user) async {
 
-  static String _uid = '';
-  static String get uid => _uid;
+          _idToken = await user?.getIdToken() ?? '';
 
-  static String _displayName = '';
-  static String get displayName => _displayName;
+          _accessToken = '';
 
-  static String _photoUrl = '';
-  static String get photoUrl => _photoUrl;
+          _isEmailVerified = user?.isEmailVerified ?? false;
 
-  static String _email = '';
-  static String get email => _email;
+          _isAnonymous = user?.isAnonymous ?? true;
 
-  static bool _isEmailVerified = false;
-  static bool get isEmailVerified => _isEmailVerified;
+          _providerId = user?.providerData[0]?.providerId ?? '';
 
-  static bool _isAnonymous = false;
-  static bool get isAnonymous => _isAnonymous;
+          _uid = user?.providerData[0]?.uid ?? '';
 
-  static String _idToken = '';
-  static String get idToken => _idToken;
+          _displayName = user?.providerData[0]?.displayName ?? '';
 
-  static String _accessToken = '';
-  static String get accessToken => _accessToken;
+          _photoUrl = '';
+
+          _email = user?.providerData[0]?.email ?? '';
+
+          _user = user;
+
+          var id = _user?.uid ?? '';
+
+          return id.isNotEmpty;
+      }
+
+
+
+        /// Log into Google and into Firebase.
+        static Future<bool> logInWithGoogle({
+          SignInOption signInOption,
+          List<String> scopes,
+          String hostedDomain,
+          Null listen(GoogleSignInAccount event),
+          Function onError,
+          void onDone(),
+          bool cancelOnError,
+          Null listener(FirebaseUser user),
+        }) async {
+
+          init(signInOption: signInOption,scopes: scopes, hostedDomain: hostedDomain, listen: listen, onError: onError, onDone: onDone, cancelOnError: cancelOnError, listener: listener);
+
+          // Attempt to get the currently authenticated user
+          GoogleSignInAccount currentUser = _googleSignIn.currentUser;
+
+          if (currentUser == null) {
+            try {
+              // Attempt to sign in without user interaction
+              currentUser = await _googleSignIn.signInSilently().then(
+                      (user){
+                    _setFireBaseUserFromGoogle(user);
+                    return user;
+                  });
+            }catch(ex){
+              _ex = ex;
+              currentUser = null;
+            }
+          }
+
+          if (currentUser == null) {
+            try {
+              // Force the user to interactively sign in
+              currentUser = await _googleSignIn.signIn().then(
+                      (user){
+                    _setFireBaseUserFromGoogle(user);
+                    return user;
+                  });
+            }catch(ex){
+              _ex = ex;
+              currentUser = null;
+            }
+          }else{
+            final loggedIn = await alreadyLoggedIn(currentUser);
+            if(!loggedIn) await _setFireBaseUserFromGoogle(currentUser);
+          }
+          return currentUser != null;
+        }
+
+
+
+        /// Sign into Google
+        static Future<bool> signInSilently({
+          SignInOption signInOption,
+          List<String> scopes,
+          String hostedDomain,
+          Null listen(GoogleSignInAccount event),
+          Function onError,
+          void onDone(),
+          bool cancelOnError,
+          bool suppressErrors = true,
+        }) async {
+
+          init(signInOption: signInOption,scopes: scopes, hostedDomain: hostedDomain, listen: listen, onError: onError, onDone: onDone, cancelOnError: cancelOnError,);
+
+          // Attempt to get the currently authenticated user
+          GoogleSignInAccount currentUser = _googleSignIn.currentUser;
+
+          if (currentUser == null) {
+            try {
+              // Attempt to sign in without user interaction
+              currentUser = await _googleSignIn.signInSilently(suppressErrors: suppressErrors).then(
+                      (user){
+                    _setFireBaseUserFromGoogle(user);
+                    return user;
+                  });
+            } catch (ex) {
+              _ex = ex;
+              if(ex.toString().indexOf('INTERNAL') > 0 ){
+                // Simply run it again to make it work.
+                return signInSilently();
+              }else {
+                currentUser = null;
+              }
+            }
+          }else{
+            final loggedIn = await alreadyLoggedIn(currentUser);
+            if(!loggedIn) await _setFireBaseUserFromGoogle(currentUser);
+          }
+          return currentUser != null;
+        }
+
+
+
+        /// Sign into Google
+        static Future<bool> signIn({
+          SignInOption signInOption,
+          List<String> scopes,
+          String hostedDomain,
+          Null listen(GoogleSignInAccount event),
+          Function onError,
+          void onDone(),
+          bool cancelOnError,
+        }) async {
+
+          init(signInOption: signInOption,scopes: scopes, hostedDomain: hostedDomain, listen: listen, onError: onError, onDone: onDone, cancelOnError: cancelOnError,);
+
+          // Attempt to get the currently authenticated user
+          GoogleSignInAccount currentUser = _googleSignIn.currentUser;
+
+          if (currentUser == null) {
+            try {
+              // Force the user to interactively sign in
+              currentUser = await _googleSignIn.signIn().then(
+                      (user){
+                    _setFireBaseUserFromGoogle(user);
+                    return user;
+                  });
+            } catch (ex) {
+              _ex = ex;
+              if(ex.toString().indexOf('INTERNAL') > 0 ){
+                // Simply run it again to make it work.
+                return signIn();
+              }else{
+                currentUser = null;
+              }
+            }
+          }else{
+            final loggedIn = await alreadyLoggedIn(currentUser);
+            if(!loggedIn) await _setFireBaseUserFromGoogle(currentUser);
+          }
+          return currentUser != null;
+        }
+
+
+
+        static Future<bool> _setFireBaseUserFromGoogle(GoogleSignInAccount currentUser) async {
+
+          final GoogleSignInAuthentication auth = await currentUser?.authentication;
+
+          FirebaseUser user;
+
+          if(auth == null){
+            user = null;
+          }else {
+            try{
+              // Authenticate with FireBase
+              user = await _fireBaseAuth.signInWithGoogle(
+                idToken: auth.idToken,
+                accessToken: auth.accessToken,
+              );
+            }catch(ex){
+              _ex = ex;
+              user = null;
+            }
+          }
+
+          _idToken = auth?.idToken ?? await user?.getIdToken() ?? '';
+
+          _accessToken = auth?.accessToken ?? '';
+
+          _isEmailVerified = user?.email?.isNotEmpty ?? false;
+
+          _isAnonymous = user?.isAnonymous ?? true;
+
+          _providerId = user?.providerId ?? '';
+
+          _uid = user?.uid ?? '';
+
+          _displayName = user?.displayName ?? '';
+
+          _photoUrl = user?.photoUrl ?? '';
+
+          _email = user?.email ?? '';
+
+          _user = user;
+
+          final id = user?.uid ?? '';
+
+          return id.isNotEmpty;
+        }
+
+
+
+        static Future<Null> signOut() async {
+          // Sign out with FireBase
+          await _fireBaseAuth.signOut();
+          // Sign out with google
+          // Does not disconnect however.
+          await _googleSignIn.signOut();
+        }
+
+
+
+        static Future<GoogleSignInAccount> disconnect(){
+          // Sign out with FireBase
+          _fireBaseAuth.signOut();
+          // Sign out with google
+          _googleSignIn.signOut();
+          // Disconnect from Google
+          return _googleSignIn.disconnect();
+        }
+
+
+
+        /// Google Signed in.
+        static bool isSignedIn() => _fireBaseAuth?.currentUser() != null;
+
+        /// FireBase Logged in.
+        static bool isLoggedIn() => _user != null;
+
+        /// Access to the GoogleSignIn Object
+        static GoogleSignIn get googleSignIn{
+          init();
+          return _googleSignIn;
+        }
+
+
+
+        /// The currently signed in account, or null if the user is signed out.
+        static  GoogleSignInAccount get googleUser {
+          init();
+          return _googleSignIn?.currentUser;
+        }
+
+
+
+        static Future<void> sendEmailVerification() async => await _user?.sendEmailVerification();
+
+
+
+        /// refreshes the data of the current user
+        static Future<void> reload() async => await _user?.reload();
+
+
+
+        static String _providerId = '';
+        static String get providerId => _providerId;
+
+        static String _uid = '';
+        static String get uid => _uid;
+
+        static String _displayName = '';
+        static String get displayName => _displayName;
+
+        static String _photoUrl = '';
+        static String get photoUrl => _photoUrl;
+
+        static String _email = '';
+        static String get email => _email;
+
+        static bool _isEmailVerified = false;
+        static bool get isEmailVerified => _isEmailVerified;
+
+        static bool _isAnonymous = false;
+        static bool get isAnonymous => _isAnonymous;
+
+        static String _idToken = '';
+        static String get idToken => _idToken;
+
+        static String _accessToken = '';
+        static String get accessToken => _accessToken;
 }
