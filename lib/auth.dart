@@ -731,12 +731,12 @@ class Auth {
 
 
 
-        static Future<void> sendEmailVerification() async => await _user?.sendEmailVerification();
+        static Future<void> sendEmailVerification() => _user?.sendEmailVerification();
 
 
 
         /// refreshes the data of the current user
-        static Future<void> reload() async => await _user?.reload();
+        static Future<void> reload() => _user?.reload();
 
 
 
