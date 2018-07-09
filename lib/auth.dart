@@ -84,6 +84,7 @@ class Auth {
   static bool _cancelOnError;
 
   static List<GoogleListener> _googleListeners = [];
+  static bool _googleRunning = false;
 
 
 
@@ -110,11 +111,14 @@ class Auth {
   }
 
 
-
-  static void _listGoogleListeners(GoogleSignInAccount event){
+  // async so you'll come back if there's a setState() called in the listener.
+  static void _listGoogleListeners(GoogleSignInAccount event) async {
+    if(_googleRunning)return;
+    _googleRunning = true;
     for (var listener in _googleListeners){
-      listener(event);
+       listener(event);
     }
+    _googleRunning = false;
   }
 
 
@@ -141,13 +145,17 @@ class Auth {
 
 
   static List<FireBaseListener> _fireBaseListeners = [];
+  static bool _firebaseRunning = false;
 
 
 
-  static void _listFireBaseListeners(FirebaseUser event){
+  static void _listFireBaseListeners(FirebaseUser event) async {
+    if(_firebaseRunning)return;
+    _firebaseRunning = true;
     for (var listener in _fireBaseListeners){
       listener(event);
     }
+    _firebaseRunning = false;
   }
 
 
@@ -524,8 +532,10 @@ class Auth {
             try {
               // Attempt to sign in without user interaction
               currentUser = await _googleSignIn.signInSilently().then(
-                      (user){
-                    _setFireBaseUserFromGoogle(user);
+                  (user){
+                    _setFireBaseUserFromGoogle(user).then((set){
+                      _listGoogleListeners(user);
+                    });
                     return user;
                   });
             }catch(ex){
@@ -538,13 +548,20 @@ class Auth {
             try {
               // Force the user to interactively sign in
               currentUser = await _googleSignIn.signIn().then(
-                      (user){
-                    _setFireBaseUserFromGoogle(user);
+                  (user){
+                    _setFireBaseUserFromGoogle(user).then((set){
+                      _listGoogleListeners(user);
+                    });
                     return user;
                   });
             }catch(ex){
               _ex = ex;
-              currentUser = null;
+              if(ex.toString().indexOf('INTERNAL') > 0 ){
+                // Simply run it again to make it work.
+                return signIn();
+              }else {
+                currentUser = null;
+              }
             }
           }else{
             final loggedIn = await alreadyLoggedIn(currentUser);
@@ -576,8 +593,10 @@ class Auth {
             try {
               // Attempt to sign in without user interaction
               currentUser = await _googleSignIn.signInSilently(suppressErrors: suppressErrors).then(
-                      (user){
-                    _setFireBaseUserFromGoogle(user);
+                  (user){
+                    _setFireBaseUserFromGoogle(user).then((set){
+                      _listGoogleListeners(user);
+                    });
                     return user;
                   });
             } catch (ex) {
@@ -618,8 +637,10 @@ class Auth {
             try {
               // Force the user to interactively sign in
               currentUser = await _googleSignIn.signIn().then(
-                      (user){
-                    _setFireBaseUserFromGoogle(user);
+                  (user){
+                    _setFireBaseUserFromGoogle(user).then((set){
+                       _listGoogleListeners(user);
+                    });
                     return user;
                   });
             } catch (ex) {
@@ -731,12 +752,15 @@ class Auth {
 
 
 
-        static Future<void> sendEmailVerification() => _user?.sendEmailVerification();
+        static Future<bool> sendEmailVerification() => _user?.sendEmailVerification();
 
 
 
         /// refreshes the data of the current user
-        static Future<void> reload() => _user?.reload();
+        static Future<bool> reload(){
+          _user?.reload();
+          return _setUserFromFireBase(_user);
+        }
 
 
 
