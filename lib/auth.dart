@@ -511,7 +511,7 @@ class Auth {
 
 
 
-        /// Log into Google and into Firebase.
+        /// Log into Firebase using Google
         static Future<bool> logInWithGoogle({
           SignInOption signInOption,
           List<String> scopes,
