@@ -14,9 +14,6 @@ dependencies:
   # https://pub.dartlang.org/packages/google_sign_in#-changelog-tab-
   google_sign_in: "^3.0.3"
 
-  # https://pub.dartlang.org/packages/flutter_facebook_login#-changelog-tab-
-#  flutter_facebook_login: "^1.1.1"
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
