@@ -711,21 +711,21 @@ class Auth {
 
         static Future<Null> signOut() async {
           // Sign out with FireBase
-          await _fireBaseAuth.signOut();
+          await _fireBaseAuth?.signOut();
           // Sign out with google
           // Does not disconnect however.
-          await _googleSignIn.signOut();
+          await _googleSignIn?.signOut();
         }
 
 
 
         static Future<GoogleSignInAccount> disconnect(){
           // Sign out with FireBase
-          _fireBaseAuth.signOut();
+          _fireBaseAuth?.signOut();
           // Sign out with google
-          _googleSignIn.signOut();
+          _googleSignIn?.signOut();
           // Disconnect from Google
-          return _googleSignIn.disconnect();
+          return _googleSignIn?.disconnect();
         }
 
 
