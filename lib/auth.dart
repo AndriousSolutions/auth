@@ -131,10 +131,9 @@ class Auth {
 
 
 
-  static initFireBase([void listener(FirebaseUser user)]) async {
+  static initFireBase([void listener(FirebaseUser user)]) {
     if(_fireBaseAuth == null) {
       _fireBaseAuth = FirebaseAuth.instance;
-      await _firebaseListener?.cancel();
       _firebaseListener = _fireBaseAuth.onAuthStateChanged.listen(_listFireBaseListeners);
     }
     if(listener != null){
