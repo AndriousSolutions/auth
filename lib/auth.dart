@@ -739,7 +739,7 @@ class Auth {
 
   /// refreshes the data of the current user
   static Future<bool> reload() async {
-    _user?.reload();
+    await _user?.reload();
     return _setUserFromFireBase(_user);
   }
 
