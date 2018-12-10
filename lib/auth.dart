@@ -19,6 +19,8 @@
 ///
 ///           Created  10 May 2018
 ///
+/// Github: https://github.com/AndriousSolutions/auth
+///
 
 import 'dart:async';
 import 'package:meta/meta.dart';
@@ -584,11 +586,16 @@ class Auth {
         // Attempt to sign in without user interaction
         currentUser = await _googleSignIn
             .signInSilently(suppressErrors: suppressErrors)
+            .catchError((ex) {
+              _ex = ex;
+            })
             .then((user) {
-          _setFireBaseUserFromGoogle(user).then((set) {
-            _listGoogleListeners(user);
-          });
+              _setFireBaseUserFromGoogle(user).then((set) {
+              _listGoogleListeners(user);
+            });
           return user;
+        }).catchError((ex) {
+          _ex = ex;
         });
       } catch (ex) {
         _ex = ex;
@@ -708,11 +715,8 @@ class Auth {
     await _googleSignIn?.signOut();
   }
 
-  static Future<GoogleSignInAccount> disconnect() {
-    // Sign out with FireBase
-    _fireBaseAuth?.signOut();
-    // Sign out with google
-    _googleSignIn?.signOut();
+  static Future<GoogleSignInAccount> disconnect() async {
+    await signOut();
     // Disconnect from Google
     return _googleSignIn?.disconnect();
   }

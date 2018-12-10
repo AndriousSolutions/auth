@@ -21,3 +21,11 @@ It is this function you will likely use the most. It does the majority of the fu
 ## It's All Static
 It's a static class library, and so prefix the word, 'Auth', in front of the function call 'anytime anywhere' in the app, and you're off and running.
 ![authcalls](https://user-images.githubusercontent.com/32497443/42484604-af25c978-83c1-11e8-8a23-bd2e5017ba76.png)
+
+##### On Medium
+This is a library is covered again in the Medium article, [Auth in Flutter](https://medium.com/flutter-community/auth-in-flutter-3f4ffe0ddcf8).
+[![auth](https://user-images.githubusercontent.com/32497443/49756376-f66e2c00-fc87-11e8-83f6-a112b8f126a5.png)](https://medium.com/flutter-community/auth-in-flutter-3f4ffe0ddcf8)
+# DECODE Flutter
+##### Live Streaming every week. Everything to do about Flutter. 
+[![twitch](https://user-images.githubusercontent.com/32497443/49753449-7349d780-fc81-11e8-9d08-89146a6731c8.png)
+](https://medium.com/@greg.perry/decode-flutter-6b60a3199e83)
