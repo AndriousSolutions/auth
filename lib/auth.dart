@@ -112,7 +112,7 @@ class Auth {
         cancelOnError: _cancelOnError);
   }
 
-  // async so you'll come back if there's a setState() called in the listener.
+  /// async so you'll come back if there's a setState() called in the listener.
   static void _listGoogleListeners(GoogleSignInAccount event) async {
     if (_googleRunning) return;
     _googleRunning = true;
@@ -520,12 +520,9 @@ class Auth {
     if (currentUser == null) {
       try {
         // Attempt to sign in without user interaction
-        currentUser = await _googleSignIn.signInSilently().then((user) {
-          _setFireBaseUserFromGoogle(user).then((set) {
-            _listGoogleListeners(user);
-          });
-          return user;
-        });
+        currentUser = await _googleSignIn.signInSilently();
+        await _setFireBaseUserFromGoogle(currentUser);
+        _listGoogleListeners(currentUser);
       } catch (ex) {
         _ex = ex;
         currentUser = null;
@@ -535,12 +532,9 @@ class Auth {
     if (currentUser == null) {
       try {
         // Force the user to interactively sign in
-        currentUser = await _googleSignIn.signIn().then((user) {
-          _setFireBaseUserFromGoogle(user).then((set) {
-            _listGoogleListeners(user);
-          });
-          return user;
-        });
+        currentUser = await _googleSignIn.signIn();
+        await _setFireBaseUserFromGoogle(currentUser);
+        _listGoogleListeners(currentUser);
       } catch (ex) {
         _ex = ex;
         if (ex.toString().indexOf('INTERNAL') > 0) {
@@ -639,12 +633,9 @@ class Auth {
     if (currentUser == null) {
       try {
         // Force the user to interactively sign in
-        currentUser = await _googleSignIn.signIn().then((user) {
-          _setFireBaseUserFromGoogle(user).then((set) {
-            _listGoogleListeners(user);
-          });
-          return user;
-        });
+        currentUser = await _googleSignIn.signIn();
+        await _setFireBaseUserFromGoogle(currentUser);
+        _listGoogleListeners(currentUser);
       } catch (ex) {
         _ex = ex;
         if (ex.toString().indexOf('INTERNAL') > 0) {
