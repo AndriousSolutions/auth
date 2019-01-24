@@ -12,11 +12,11 @@ dependencies:
     sdk: flutter
 
   # https://pub.dartlang.org/packages/firebase_auth#-changelog-tab-
-  firebase_auth: "^0.5.9"
+  firebase_auth: ^0.6.6
 
   # https://pub.dartlang.org/packages/google_sign_in#-changelog-tab-
-  google_sign_in: "^3.0.3"
-
+  google_sign_in: ^3.2.4
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
