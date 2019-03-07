@@ -1,8 +1,9 @@
-name: auth
-description: Authorization Library
-version: 0.1.1
-author:
-homepage:
+name: auth070
+description: Authorization Library Package to log into Google, Facebook, or by Username and Password.
+version: 1.0.0
+author: Greg Perry <support@andrioussolutions.com>
+homepage: https://github.com/AndriousSolutions/auth
+repository: https://github.com/AndriousSolutions/auth
 
 environment:
   sdk: '>=2.0.0 <3.0.0'
@@ -11,11 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # https://pub.dartlang.org/packages/firebase_auth#-changelog-tab-
-  firebase_auth: "^0.5.9"
+  firebase_auth: "0.7.0"
 
-  # https://pub.dartlang.org/packages/google_sign_in#-changelog-tab-
-  google_sign_in: "^3.0.3"
+  google_sign_in: "3.2.4"
 
 dev_dependencies:
   flutter_test:

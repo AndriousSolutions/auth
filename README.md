@@ -1,3 +1,10 @@
+# Auth070
+In Jan 24, 2019, [firebase_auth ](https://pub.dartlang.org/packages/firebase_auth) migrated to AndroidX essentially cutting off the previous Android versions. This package retains those versions if you need to use them. In other words, if you want to not migrate just yet, use this package that will, in turn, continue to use [firebase_auth 0.7.0.](https://pub.dartlang.org/packages/firebase_auth#080)
+[![fireauth080](https://user-images.githubusercontent.com/32497443/53976281-b5de4d00-40d4-11e9-8807-f3b86de4414c.png)](https://pub.dartlang.org/packages/firebase_auth#080)
+You may have to consider useing this package if, for example, you encounter the following error:
+![nonnullerror](https://user-images.githubusercontent.com/32497443/53976257-a9f28b00-40d4-11e9-9f61-cd4756fd81d2.png)
+The common solution (in most cases) requires you to 'upgrade' minSdkVersion to at least, 21:
+![minsdk](https://user-images.githubusercontent.com/32497443/53976275-b1b22f80-40d4-11e9-86e6-cb1fb2428663.png)
 # Auth Class
 This class library works with two plugins: [firebase_auth ](https://pub.dartlang.org/packages/firebase_auth) and [google_sign_in](https://pub.dartlang.org/packages/google_sign_in) to log into a Firebase backend using a Firebase account or a Google account. If you're familiar with these plugins, you will find the same functions used in this class library. 
 ## How it Works
@@ -25,7 +32,3 @@ It's a static class library, and so prefix the word, 'Auth', in front of the fun
 ##### On Medium
 This is a library is covered again in the Medium article, [Auth in Flutter](https://medium.com/flutter-community/auth-in-flutter-3f4ffe0ddcf8).
 [![auth](https://user-images.githubusercontent.com/32497443/49756376-f66e2c00-fc87-11e8-83f6-a112b8f126a5.png)](https://medium.com/flutter-community/auth-in-flutter-3f4ffe0ddcf8)
-# DECODE Flutter
-##### Live Streaming every week. Everything to do about Flutter. 
-[![twitch](https://user-images.githubusercontent.com/32497443/49753449-7349d780-fc81-11e8-9d08-89146a6731c8.png)
-](https://medium.com/@greg.perry/decode-flutter-6b60a3199e83)

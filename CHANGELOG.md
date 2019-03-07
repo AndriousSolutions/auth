@@ -3,3 +3,7 @@
 ##### [0.0.3] - await _user?.reload();
 ##### [0.1.0] - Dec. 10, Change semantic version number to convey development phase.
 ##### [0.1.1] - Jan. 17, 2019  await _setFireBaseUserFromGoogle(currentUser);
+##### [1.0.0] - Mar. 07, 2019  Added signInWithCredential, linkWithCredential, fetchSignInMethodsForEmail
+#####                          Concrete dependencies assigned firebase_auth: "0.7.0" google_sign_in: "3.2.4"
+##### **Breaking Change**      Removed signInWithFacebook, signInWithTwitter, signInWithGoogle, 
+##### **Breaking Change**      linkWithEmailAndPassword, linkWithGoogleCredential, linkWithFacebookCredential

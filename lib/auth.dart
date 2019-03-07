@@ -21,6 +21,7 @@
 ///
 /// Github: https://github.com/AndriousSolutions/auth
 ///
+library auth;
 
 import 'dart:async';
 import 'package:meta/meta.dart';
@@ -212,12 +213,6 @@ class Auth {
       [void listener(FirebaseUser user)]) async {
     initFireBase(listener);
 
-//      final loggedIn = alreadyLoggedIn().then((logIn){
-//        return logIn;
-//      });
-//
-//      if(loggedIn) return loggedIn;
-
     FirebaseUser user;
     try {
       user = await _fireBaseAuth.signInAnonymously();
@@ -254,13 +249,13 @@ class Auth {
     return user != null;
   }
 
-  static Future<List<String>> fetchProvidersForEmail({
+  static Future<List<String>> fetchSignInMethodsForEmail({
     @required String email,
   }) async {
     List<String> providers;
 
     try {
-      providers = await _fireBaseAuth?.fetchProvidersForEmail(email: email);
+      providers = await _fireBaseAuth?.fetchSignInMethodsForEmail(email: email);
     } catch (ex) {
       _ex = ex;
       providers = null;
@@ -306,42 +301,8 @@ class Auth {
     return user != null;
   }
 
-//    static Future<bool> loginWithFacebook() async {
-//      var result;
-//      try {
-//        result = await FacebookLogin().logInWithReadPermissions(['email']);
-//      }catch(ex){
-//        _ex = ex;
-//        return false;
-//      }
-//      return await signInWithFacebook(accessToken: result.accessToken.token);
-//    }
-
-  static Future<bool> signInWithFacebook(
-      {@required String accessToken, void listener(FirebaseUser user)}) async {
-    initFireBase(listener);
-
-    final loggedIn = await alreadyLoggedIn();
-    if (loggedIn) return loggedIn;
-
-    FirebaseUser user;
-    try {
-      user = await _fireBaseAuth
-          .signInWithFacebook(accessToken: accessToken)
-          .then((usr) {
-        _setUserFromFireBase(usr);
-        return usr;
-      });
-    } catch (ex) {
-      _ex = ex;
-      user = null;
-    }
-    return user != null;
-  }
-
-  static Future<bool> signInWithTwitter(
-      {@required String authToken,
-      @required String authTokenSecret,
+  static Future<bool> signInWithCredential(
+      {@required AuthCredential credential,
       void listener(FirebaseUser user)}) async {
     initFireBase(listener);
 
@@ -350,34 +311,7 @@ class Auth {
 
     FirebaseUser user;
     try {
-      user = await _fireBaseAuth
-          .signInWithTwitter(
-              authToken: authToken, authTokenSecret: authTokenSecret)
-          .then((usr) {
-        _setUserFromFireBase(usr);
-        return usr;
-      });
-    } catch (ex) {
-      _ex = ex;
-      user = null;
-    }
-    return user != null;
-  }
-
-  static Future<bool> signInWithGoogle(
-      {@required String idToken,
-      @required String accessToken,
-      void listener(FirebaseUser user)}) async {
-    initFireBase(listener);
-
-    final loggedIn = await alreadyLoggedIn();
-    if (loggedIn) return loggedIn;
-
-    FirebaseUser user;
-    try {
-      user = await _fireBaseAuth
-          .signInWithGoogle(idToken: idToken, accessToken: accessToken)
-          .then((usr) {
+      user = await _fireBaseAuth.signInWithCredential(credential).then((usr) {
         _setUserFromFireBase(usr);
         return usr;
       });
@@ -420,46 +354,15 @@ class Auth {
     return user;
   }
 
-  static Future<FirebaseUser> linkWithEmailAndPassword({
-    @required String email,
-    @required String password,
-  }) async {
-    FirebaseUser user;
-    try {
-      user = await _fireBaseAuth?.linkWithEmailAndPassword(
-          email: email, password: password);
-    } catch (ex) {
-      _ex = ex;
-      user = null;
-    }
-    return user;
-  }
-
+  // Update from firebase_auth 0.6.2+1
   static Future<void> updateProfile(UserUpdateInfo userUpdateInfo) =>
-      _fireBaseAuth?.updateProfile(userUpdateInfo);
+      _user?.updateProfile(userUpdateInfo);
 
-  static Future<FirebaseUser> linkWithGoogleCredential({
-    @required String idToken,
-    @required String accessToken,
-  }) async {
+  static Future<FirebaseUser> linkWithCredential(
+      AuthCredential credential) async {
     FirebaseUser user;
     try {
-      user = await _fireBaseAuth?.linkWithGoogleCredential(
-          idToken: idToken, accessToken: accessToken);
-    } catch (ex) {
-      _ex = ex;
-      user = null;
-    }
-    return user;
-  }
-
-  static Future<FirebaseUser> linkWithFacebookCredential({
-    @required String accessToken,
-  }) async {
-    FirebaseUser user;
-    try {
-      user = await _fireBaseAuth?.linkWithFacebookCredential(
-          accessToken: accessToken);
+      user = await _fireBaseAuth?.linkWithCredential(credential);
     } catch (ex) {
       _ex = ex;
       user = null;
@@ -581,12 +484,11 @@ class Auth {
         currentUser = await _googleSignIn
             .signInSilently(suppressErrors: suppressErrors)
             .catchError((ex) {
-              _ex = ex;
-            })
-            .then((user) {
-              _setFireBaseUserFromGoogle(user).then((set) {
-              _listGoogleListeners(user);
-            });
+          _ex = ex;
+        }).then((user) {
+          _setFireBaseUserFromGoogle(user).then((set) {
+            _listGoogleListeners(user);
+          });
           return user;
         }).catchError((ex) {
           _ex = ex;
@@ -662,11 +564,11 @@ class Auth {
       user = null;
     } else {
       try {
-        // Authenticate with FireBase
-        user = await _fireBaseAuth.signInWithGoogle(
-          idToken: auth.idToken,
+        final AuthCredential credential = GoogleAuthProvider.getCredential(
           accessToken: auth.accessToken,
+          idToken: auth.idToken,
         );
+        user = await _fireBaseAuth.signInWithCredential(credential);
       } catch (ex) {
         _ex = ex;
         user = null;
