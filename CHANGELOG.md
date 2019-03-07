@@ -6,3 +6,4 @@
 ##### [1.0.0] - Mar. 07, 2019  Added signInWithCredential, linkWithCredential, fetchSignInMethodsForEmail
 ##### **Breaking Change**      Removed signInWithFacebook, signInWithTwitter, signInWithGoogle, 
 ##### **Breaking Change**      linkWithEmailAndPassword, linkWithGoogleCredential, linkWithFacebookCredential
+##### [1.0.1] - Mar. 07, 2019  import 'package:flutter/material.dart';
