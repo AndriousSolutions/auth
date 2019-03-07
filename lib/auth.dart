@@ -23,10 +23,21 @@
 ///
 library auth;
 
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:async' show Future, StreamSubscription;
+import 'package:flutter/material.dart' show required;
+import 'package:firebase_auth/firebase_auth.dart'
+    show
+        AuthCredential,
+        FirebaseAuth,
+        FirebaseUser,
+        GoogleAuthProvider,
+        UserUpdateInfo;
+import 'package:google_sign_in/google_sign_in.dart'
+    show
+        GoogleSignIn,
+        GoogleSignInAccount,
+        GoogleSignInAuthentication,
+        SignInOption;
 
 typedef void GoogleListener(GoogleSignInAccount event);
 typedef void FireBaseListener(FirebaseUser user);
