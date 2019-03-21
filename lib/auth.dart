@@ -29,8 +29,10 @@ import 'package:firebase_auth/firebase_auth.dart'
     show
         AuthCredential,
         FirebaseAuth,
+        FacebookAuthProvider,
         FirebaseUser,
         GoogleAuthProvider,
+        TwitterAuthProvider,
         UserUpdateInfo;
 import 'package:google_sign_in/google_sign_in.dart'
     show
@@ -38,6 +40,8 @@ import 'package:google_sign_in/google_sign_in.dart'
         GoogleSignInAccount,
         GoogleSignInAuthentication,
         SignInOption;
+
+import 'package:auth/flutteroauth.dart';
 
 typedef void GoogleListener(GoogleSignInAccount event);
 typedef void FireBaseListener(FirebaseUser user);
@@ -310,6 +314,26 @@ class Auth {
     return user != null;
   }
 
+  static Future<bool> signInWithFacebook({@required String id, @required String secret}) async {
+    id ??= "";
+    secret ??= "";
+    assert(id.isNotEmpty,
+    "Must pass an id to signInWithFacebook() function!");
+    assert(secret.isNotEmpty,
+    "Must pass the secret to signInWithFacebook() function!");
+    if(id.isEmpty || secret.isEmpty) return Future.value(false);
+    final OAuth flutterOAuth = FlutterOAuth(Config(
+        "https://www.facebook.com/dialog/oauth",
+        "https://graph.facebook.com/v2.2/oauth/access_token",
+        id,
+        secret,
+        "http://localhost:8080/",
+        "code"));
+    Token token = await flutterOAuth.performAuthorization();
+    AuthCredential credential = FacebookAuthProvider.getCredential(accessToken: token.accessToken);
+    return signInWithCredential(credential: credential);
+  }
+
   static Future<bool> signInWithCredential(
       {@required AuthCredential credential,
       void listener(FirebaseUser user)}) async {
@@ -364,8 +388,15 @@ class Auth {
   }
 
   // Update from firebase_auth 0.6.2+1
-  static Future<void> updateProfile(UserUpdateInfo userUpdateInfo) =>
-      _user?.updateProfile(userUpdateInfo);
+  static Future<void> updateProfile(UserUpdateInfo userUpdateInfo) {
+    Future<void> profile;
+    try {
+      profile = _user?.updateProfile(userUpdateInfo);
+    } catch (ex) {
+      _ex = ex;
+    }
+    return profile;
+  }
 
   static Future<FirebaseUser> linkWithCredential(
       AuthCredential credential) async {
