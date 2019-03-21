@@ -22,30 +22,30 @@
 ///
 ///
 
-import 'package:auth/src/model/config.dart';
+import 'package:auth/src/oauth/model/config.dart';
 
-class AuthorizationRequest {
+class TokenRequestDetails {
 
   String url;
-  Map<String, String> parameters;
+  Map<String, String> params;
   Map<String, String> headers;
-  bool fullScreen;
-  bool clearCookies;
 
-  AuthorizationRequest(Config config,
-      {bool fullScreen: true, bool clearCookies: true}) {
-    this.url = config.authorizationUrl;
-    this.parameters = {
-      "client_id": config.clientId,
-//      "response_type": config.responseType,
-      "redirect_uri": config.redirectUri,
+  TokenRequestDetails(Config configuration, String code) {
+    this.url = configuration.tokenUrl;
+    this.params = {
+      "client_id": configuration.clientId,
+      "client_secret": configuration.clientSecret,
+      "code": code,
+      "redirect_uri": configuration.redirectUri
+//      ,"grant_type": "authorization_code"
     };
-    if (config.parameters != null) {
-      this.parameters.addAll(config.parameters);
+    this.headers = {
+      "Accept": "application/json",
+      "Content-Type": configuration.contentType
+    };
+    if (configuration.headers != null) {
+      this.headers.addAll(headers);
     }
-    this.fullScreen = fullScreen;
-    this.clearCookies = clearCookies;
-    this.headers = config.headers;
   }
 
 }

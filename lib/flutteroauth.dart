@@ -22,10 +22,10 @@
 ///
 ///
 
-export 'package:auth/src/flutter_auth.dart';
+export 'package:auth/src/oauth/flutter_auth.dart';
 
-export 'package:auth/src/model/config.dart';
+export 'package:auth/src/oauth/model/config.dart';
 
-export 'package:auth/src/oauth.dart';
+export 'package:auth/src/oauth/oauth.dart';
 
-export 'package:auth/src/token.dart';
+export 'package:auth/src/oauth/token.dart';

@@ -27,10 +27,10 @@ library flutter_oauth;
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:auth/src/auth_code_information.dart';
-import 'package:auth/src/model/config.dart';
-import 'package:auth/src/oauth_token.dart';
-import 'package:auth/src/token.dart';
+import 'package:auth/src/oauth/auth_code_information.dart';
+import 'package:auth/src/oauth/model/config.dart';
+import 'package:auth/src/oauth/oauth_token.dart';
+import 'package:auth/src/oauth/token.dart';
 import 'package:http/http.dart';
 
 abstract class OAuth {

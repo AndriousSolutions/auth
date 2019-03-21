@@ -25,9 +25,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:auth/src/auth_code_information.dart';
-import 'package:auth/src/model/config.dart';
-import 'package:auth/src/oauth.dart';
+import 'package:auth/src/oauth/auth_code_information.dart';
+import 'package:auth/src/oauth/model/config.dart';
+import 'package:auth/src/oauth/oauth.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 class FlutterOAuth extends OAuth {
