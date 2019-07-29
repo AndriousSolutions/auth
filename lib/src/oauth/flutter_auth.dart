@@ -42,8 +42,8 @@ class FlutterOAuth extends OAuth {
   Stream<String> get onCode =>
       onCodeStream ??= onCodeListener.stream.asBroadcastStream();
 
-  FlutterOAuth(Config configuration) :
-        super(configuration, AuthorizationRequest(configuration));
+  FlutterOAuth(Config configuration)
+      : super(configuration, AuthorizationRequest(configuration));
 
   Future<String> requestCode() async {
     if (shouldRequestCode() && !isBrowserOpen) {
@@ -77,8 +77,8 @@ class FlutterOAuth extends OAuth {
   }
 
   Future<HttpServer> createServer() async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080,
-        shared: true);
+    final server =
+        await HttpServer.bind(InternetAddress.loopbackIPv4, 8080, shared: true);
     return server;
   }
 
@@ -100,5 +100,4 @@ class FlutterOAuth extends OAuth {
       }
     });
   }
-
 }

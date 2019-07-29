@@ -25,7 +25,6 @@
 import 'package:auth/src/oauth/model/config.dart';
 
 class AuthorizationRequest {
-
   String url;
   Map<String, String> parameters;
   Map<String, String> headers;
@@ -47,5 +46,4 @@ class AuthorizationRequest {
     this.clearCookies = clearCookies;
     this.headers = config.headers;
   }
-
 }

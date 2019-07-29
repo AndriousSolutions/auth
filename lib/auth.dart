@@ -27,6 +27,8 @@ import 'dart:async' show Future, StreamSubscription;
 import 'package:flutter/material.dart' show required;
 import 'package:firebase_auth/firebase_auth.dart'
     show
+        AdditionalUserInfo,
+        AuthResult,
         AuthCredential,
         FirebaseAuth,
         FacebookAuthProvider,
@@ -50,6 +52,9 @@ typedef Future<FirebaseUser> FireBaseUser();
 class Auth {
   static FirebaseAuth _fireBaseAuth;
   static GoogleSignIn _googleSignIn;
+
+  static AuthResult _result;
+  static AuthResult get result => _result;
 
   static FirebaseUser _user;
   static FirebaseUser get user => _user;
@@ -227,11 +232,15 @@ class Auth {
     initFireBase(listener);
 
     FirebaseUser user;
+    AuthResult result;
+
     try {
-      user = await _fireBaseAuth.signInAnonymously();
-      await _setUserFromFireBase(user);
+      result = await _fireBaseAuth.signInAnonymously();
+      user = result?.user;
+      await _setUserFromFireBase(result);
     } catch (ex) {
       _ex = ex;
+      result = null;
       user = null;
     }
     // Must return null until 'awaits' are completed. -gp
@@ -251,8 +260,9 @@ class Auth {
     try {
       user = await _fireBaseAuth
           .createUserWithEmailAndPassword(email: email, password: password)
-          .then((usr) {
-        _setUserFromFireBase(usr);
+          .then((result) {
+        FirebaseUser usr = result.user;
+        _setUserFromFireBase(result);
         return usr;
       });
     } catch (ex) {
@@ -303,8 +313,9 @@ class Auth {
     try {
       user = await _fireBaseAuth
           .signInWithEmailAndPassword(email: email, password: password)
-          .then((usr) {
-        _setUserFromFireBase(usr);
+          .then((result) {
+        FirebaseUser usr = result?.user;
+        _setUserFromFireBase(result);
         return usr;
       });
     } catch (ex) {
@@ -314,14 +325,14 @@ class Auth {
     return user != null;
   }
 
-  static Future<bool> signInWithFacebook({@required String id, @required String secret}) async {
+  static Future<bool> signInWithFacebook(
+      {@required String id, @required String secret}) async {
     id ??= "";
     secret ??= "";
-    assert(id.isNotEmpty,
-    "Must pass an id to signInWithFacebook() function!");
+    assert(id.isNotEmpty, "Must pass an id to signInWithFacebook() function!");
     assert(secret.isNotEmpty,
-    "Must pass the secret to signInWithFacebook() function!");
-    if(id.isEmpty || secret.isEmpty) return Future.value(false);
+        "Must pass the secret to signInWithFacebook() function!");
+    if (id.isEmpty || secret.isEmpty) return Future.value(false);
     final OAuth flutterOAuth = FlutterOAuth(Config(
         "https://www.facebook.com/dialog/oauth",
         "https://graph.facebook.com/v2.2/oauth/access_token",
@@ -330,7 +341,31 @@ class Auth {
         "http://localhost:8080/",
         "code"));
     Token token = await flutterOAuth.performAuthorization();
-    AuthCredential credential = FacebookAuthProvider.getCredential(accessToken: token.accessToken);
+    AuthCredential credential =
+        FacebookAuthProvider.getCredential(accessToken: token.accessToken);
+    return signInWithCredential(credential: credential);
+  }
+
+  static Future<bool> signInWithTwitter({@required String key, @required String secret, @required String callbackURI}) async {
+    key ??= "";
+    secret ??= "";
+    callbackURI ??= "";
+    assert(key.isNotEmpty,
+    "Must pass an key to signInWithTwitter() function!");
+    assert(secret.isNotEmpty,
+    "Must pass the secret to signInWithTwitter() function!");
+    assert(callbackURI.isNotEmpty,
+    "Must pass the callback URI to signInWithTwitter() function!");
+    if(key.isEmpty || secret.isEmpty || callbackURI.isEmpty) return Future.value(false);
+    final OAuth flutterOAuth = FlutterOAuth(Config(
+        "https://api.twitter.com/oauth/request_token",
+        "https://api.twitter.com/oauth/authenticate",
+        key,
+        secret,
+        callbackURI,
+        "code"));
+    Token accessToken = await flutterOAuth.performAuthorization();
+    AuthCredential credential = TwitterAuthProvider.getCredential(authToken: accessToken.accessToken, authTokenSecret: secret);
     return signInWithCredential(credential: credential);
   }
 
@@ -344,9 +379,11 @@ class Auth {
 
     FirebaseUser user;
     try {
-      user = await _fireBaseAuth.signInWithCredential(credential).then((usr) {
-        _setUserFromFireBase(usr);
-        return usr;
+      user =
+          await _fireBaseAuth.signInWithCredential(credential).then((result) {
+        var user = result?.user;
+        _setUserFromFireBase(result);
+        return user;
       });
     } catch (ex) {
       _ex = ex;
@@ -364,9 +401,11 @@ class Auth {
 
     FirebaseUser user;
     try {
-      user =
-          await _fireBaseAuth.signInWithCustomToken(token: token).then((usr) {
-        _setUserFromFireBase(usr);
+      user = await _fireBaseAuth
+          .signInWithCustomToken(token: token)
+          .then((result) {
+        FirebaseUser usr = result?.user;
+        _setUserFromFireBase(result);
         return usr;
       });
     } catch (ex) {
@@ -401,16 +440,25 @@ class Auth {
   static Future<FirebaseUser> linkWithCredential(
       AuthCredential credential) async {
     FirebaseUser user;
+    AuthResult result;
+
     try {
-      user = await _fireBaseAuth?.linkWithCredential(credential);
+      result = await _user?.linkWithCredential(credential);
+      user = result?.user;
+      _result = result;
     } catch (ex) {
       _ex = ex;
+      result = null;
       user = null;
     }
     return user;
   }
 
-  static Future<bool> _setUserFromFireBase(FirebaseUser user) async {
+  static Future<bool> _setUserFromFireBase(AuthResult result) async {
+    _result = result;
+
+    FirebaseUser user = result?.user;
+
     _idToken = await user?.getIdToken() ?? '';
 
     _accessToken = '';
@@ -599,6 +647,7 @@ class Auth {
     final GoogleSignInAuthentication auth = await currentUser?.authentication;
 
     FirebaseUser user;
+    AuthResult result;
 
     if (auth == null) {
       user = null;
@@ -608,12 +657,16 @@ class Auth {
           accessToken: auth.accessToken,
           idToken: auth.idToken,
         );
-        user = await _fireBaseAuth.signInWithCredential(credential);
+        result = await _fireBaseAuth.signInWithCredential(credential);
+        user = result?.user;
       } catch (ex) {
         _ex = ex;
+        result = null;
         user = null;
       }
     }
+
+    _result = result;
 
     _idToken = auth?.idToken ?? await user?.getIdToken() ?? '';
 
@@ -677,11 +730,18 @@ class Auth {
   /// refreshes the data of the current user
   static Future<bool> reload() async {
     await _user?.reload();
-    return _setUserFromFireBase(_user);
+    return _setUserFromFireBase(_result);
   }
 
+  static AdditionalUserInfo get userInfo => _result?.additionalUserInfo;
+
+  static bool get isNewUser => _result?.additionalUserInfo?.isNewUser ?? false;
+
+  static String get username => _result?.additionalUserInfo?.username ?? '';
+
   static String _providerId = '';
-  static String get providerId => _providerId;
+  static String get providerId =>
+      _result?.additionalUserInfo?.providerId ?? _providerId;
 
   static String _uid = '';
   static String get uid => _uid;

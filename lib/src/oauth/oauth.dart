@@ -34,7 +34,6 @@ import 'package:auth/src/oauth/token.dart';
 import 'package:http/http.dart';
 
 abstract class OAuth {
-
   final Config configuration;
   final AuthorizationRequest requestDetails;
   String code;
@@ -47,8 +46,7 @@ abstract class OAuth {
   Future<Map<String, dynamic>> getToken() async {
     if (token == null) {
       Response response = await post("${tokenRequest.url}",
-          body: jsonEncode(tokenRequest.params),
-          headers: tokenRequest.headers);
+          body: jsonEncode(tokenRequest.params), headers: tokenRequest.headers);
       token = jsonDecode(response.body);
     }
     return token;
@@ -79,5 +77,4 @@ abstract class OAuth {
   }
 
   Future<String> requestCode();
-
 }

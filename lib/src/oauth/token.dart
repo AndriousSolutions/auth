@@ -23,14 +23,12 @@
 ///
 
 class Token {
-
   String accessToken;
   String tokenType;
 
   Token();
 
-  factory Token.fromJson(Map<String, dynamic> json) =>
-      Token.fromMap(json);
+  factory Token.fromJson(Map<String, dynamic> json) => Token.fromMap(json);
 
   Map toMap() => Token.toJsonMap(this);
 
@@ -57,5 +55,4 @@ class Token {
     model.tokenType = map["token_type"];
     return model;
   }
-
 }
