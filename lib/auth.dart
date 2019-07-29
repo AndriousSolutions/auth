@@ -346,17 +346,20 @@ class Auth {
     return signInWithCredential(credential: credential);
   }
 
-  static Future<bool> signInWithTwitter({@required String key, @required String secret, @required String callbackURI}) async {
+  static Future<bool> signInWithTwitter(
+      {@required String key,
+      @required String secret,
+      @required String callbackURI}) async {
     key ??= "";
     secret ??= "";
     callbackURI ??= "";
-    assert(key.isNotEmpty,
-    "Must pass an key to signInWithTwitter() function!");
+    assert(key.isNotEmpty, "Must pass an key to signInWithTwitter() function!");
     assert(secret.isNotEmpty,
-    "Must pass the secret to signInWithTwitter() function!");
+        "Must pass the secret to signInWithTwitter() function!");
     assert(callbackURI.isNotEmpty,
-    "Must pass the callback URI to signInWithTwitter() function!");
-    if(key.isEmpty || secret.isEmpty || callbackURI.isEmpty) return Future.value(false);
+        "Must pass the callback URI to signInWithTwitter() function!");
+    if (key.isEmpty || secret.isEmpty || callbackURI.isEmpty)
+      return Future.value(false);
     final OAuth flutterOAuth = FlutterOAuth(Config(
         "https://api.twitter.com/oauth/request_token",
         "https://api.twitter.com/oauth/authenticate",
@@ -365,7 +368,8 @@ class Auth {
         callbackURI,
         "code"));
     Token accessToken = await flutterOAuth.performAuthorization();
-    AuthCredential credential = TwitterAuthProvider.getCredential(authToken: accessToken.accessToken, authTokenSecret: secret);
+    AuthCredential credential = TwitterAuthProvider.getCredential(
+        authToken: accessToken.accessToken, authTokenSecret: secret);
     return signInWithCredential(credential: credential);
   }
 
