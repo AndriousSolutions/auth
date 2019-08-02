@@ -1,4 +1,14 @@
+## 1.3.0
+ August 02, 2019
+- async isSignedIn(), isLoggedIn()
+- Library-private _initFireBase()
+- _setUserFromFireBase() in _listFireBaseListeners()
+- _setFireBaseUserFromGoogle() in _listGoogleListeners()
+- Introduced IdTokenResult
+- if (ex is! Exception) {
+
 ## 1.2.1
+ July 29, 2019
 - Latest firebase_auth version
 - Format code 
 - signInWithTwitter()
