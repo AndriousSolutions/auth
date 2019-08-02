@@ -54,23 +54,6 @@ class Auth {
   static FirebaseAuth _fireBaseAuth;
   static GoogleSignIn _googleSignIn;
 
-  static AuthResult _result;
-  static AuthResult get result => _result;
-
-  static FirebaseUser _user;
-  static FirebaseUser get user => _user;
-
-  static Exception _ex;
-  static Exception get ex => _ex;
-  static String get message => _ex?.toString() ?? '';
-
-  /// Get the last error but clear it.
-  static Exception getError(){
-    Exception e = _ex;
-    _ex = null;
-    return e;
-  }
-
   static StreamSubscription<FirebaseUser> _firebaseListener;
   static StreamSubscription<GoogleSignInAccount> _googleListener;
 
@@ -90,73 +73,19 @@ class Auth {
         onDone: onDone,
         cancelOnError: cancelOnError);
 
-    if (_googleSignIn == null ||
-        signInOption != null ||
-        scopes != null ||
-        hostedDomain != null) {
-      _signInOption = signInOption ?? _signInOption;
-      _scopes = scopes ?? _scopes;
-      _hostedDomain = hostedDomain ?? _hostedDomain;
-
+    if (_googleSignIn == null) {
       _googleSignIn = GoogleSignIn(
-          signInOption: _signInOption,
-          scopes: _scopes,
-          hostedDomain: _hostedDomain);
+          signInOption: signInOption,
+          scopes: scopes,
+          hostedDomain: hostedDomain);
+
+      _initListen(
+          listen: listen,
+          onError: onError,
+          onDone: onDone,
+          cancelOnError: cancelOnError);
     }
-
-    initListen(
-        listen: listen,
-        onError: onError,
-        onDone: onDone,
-        cancelOnError: cancelOnError);
   }
-
-  static SignInOption _signInOption;
-  static List<String> _scopes;
-  static String _hostedDomain;
-  static Function _onError;
-  static Function _onDone;
-  static bool _cancelOnError;
-
-  static List<GoogleListener> _googleListeners = [];
-  static bool _googleRunning = false;
-
-  static void initListen({
-    void listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
-  }) async {
-    assert(_googleSignIn != null,
-        "Class Auth: _googleSignIn must be initialized!");
-
-    if (listen != null) _googleListeners.add(listen);
-    _onError = onError ?? _onError;
-    _onDone = onDone ?? _onDone;
-    _cancelOnError = cancelOnError ?? _cancelOnError;
-
-    if (_googleListener != null) await _googleListener.cancel();
-    _googleListener = _googleSignIn.onCurrentUserChanged.listen(
-        _listGoogleListeners,
-        onError: _onError,
-        onDone: _onDone,
-        cancelOnError: _cancelOnError);
-  }
-
-  /// async so you'll come back if there's a setState() called in the listener.
-  static void _listGoogleListeners(GoogleSignInAccount user) async {
-    if (_googleRunning) return;
-    _googleRunning = true;
-    await _setFireBaseUserFromGoogle(user);
-    for (var listener in _googleListeners) {
-      listener(user);
-    }
-    _googleRunning = false;
-  }
-
-  static set googleListener(GoogleListener f) => _googleListeners.add(f);
-
-  static removeListen(GoogleListener f) => _googleListeners.remove(f);
 
   static _initFireBase({
     void listener(FirebaseUser user),
@@ -177,7 +106,7 @@ class Auth {
     }
   }
 
-  static List<FireBaseListener> _fireBaseListeners = [];
+  static Set<FireBaseListener> _fireBaseListeners = Set();
   static bool _firebaseRunning = false;
 
   static void _listFireBaseListeners(FirebaseUser user) async {
@@ -190,9 +119,46 @@ class Auth {
     _firebaseRunning = false;
   }
 
-  static set fireBaseListener(FireBaseListener f) => _fireBaseListeners.add(f);
+  static fireBaseListener(FireBaseListener f) => _fireBaseListeners.add(f);
 
   static removeListener(FireBaseListener f) => _fireBaseListeners.remove(f);
+
+  static Set<GoogleListener> _googleListeners = Set();
+  static bool _googleRunning = false;
+
+  static void _initListen({
+    void listen(GoogleSignInAccount event),
+    Function onError,
+    void onDone(),
+    bool cancelOnError,
+  }) async {
+    if (_googleSignIn != null) {
+      if (listen != null) _googleListeners.add(listen);
+
+      if (_googleListener == null) {
+        _googleListener = _googleSignIn.onCurrentUserChanged.listen(
+            _listGoogleListeners,
+            onError: onError,
+            onDone: onDone,
+            cancelOnError: cancelOnError);
+      }
+    }
+  }
+
+  /// async so you'll come back if there's a setState() called in the listener.
+  static void _listGoogleListeners(GoogleSignInAccount user) async {
+    if (_googleRunning) return;
+    _googleRunning = true;
+    await _setFireBaseUserFromGoogle(user);
+    for (var listener in _googleListeners) {
+      listener(user);
+    }
+    _googleRunning = false;
+  }
+
+  static googleListener(GoogleListener f) => _googleListeners.add(f);
+
+  static removeListen(GoogleListener f) => _googleListeners.remove(f);
 
   static dispose() async {
     signOut();
@@ -207,37 +173,6 @@ class Auth {
     _firebaseListener = null;
   }
 
-  static set signInOption(SignInOption v) {
-    if (v == null) _signInOption = null;
-    init(signInOption: v);
-  }
-
-  static set scopes(List<String> v) {
-    if (v == null) _scopes = null;
-    init(scopes: v);
-  }
-
-  static set hostedDomain(String v) {
-    if (v == null) _hostedDomain = null;
-    init(hostedDomain: v);
-  }
-
-  static set listen(Function f) => Auth.googleListener = f;
-
-  static set onError(Function f) {
-    if (f == null) _onError = null;
-    initListen(onError: f);
-  }
-
-  static set onDone(Function f) {
-    if (f == null) _onDone = null;
-    initListen(onDone: f);
-  }
-
-  static set cancelOnError(bool b) => initListen(cancelOnError: b);
-
-  static set listener(Function f) => Auth.fireBaseListener = f;
-
   static Future<bool> alreadyLoggedIn([GoogleSignInAccount googleUser]) async {
     FirebaseUser fireBaseUser;
     if (_fireBaseAuth != null) fireBaseUser = await _fireBaseAuth.currentUser();
@@ -250,27 +185,12 @@ class Auth {
 
   /// Firebase Login.
   static Future<bool> signInAnonymously({
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
-    void listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
     void listener(FirebaseUser user),
   }) async {
+    final loggedIn = await alreadyLoggedIn();
+    if (loggedIn) return loggedIn;
 
-
-    init(
-      signInOption: signInOption,
-      scopes: scopes,
-      hostedDomain: hostedDomain,
-      listen: listen,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-      listener: listener,
-    );
+    _initFireBase(listener: listener);
 
     FirebaseUser user;
     try {
@@ -286,35 +206,18 @@ class Auth {
       user = null;
     }
     // Must return null until 'awaits' are completed. -gp
-    return user?.uid?.isNotEmpty;
+    return user?.uid?.isNotEmpty ?? false;
   }
 
   static Future<bool> createUserWithEmailAndPassword({
     @required String email,
     @required String password,
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
-    void listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
     void listener(FirebaseUser user),
   }) async {
-
     final loggedIn = await alreadyLoggedIn();
     if (loggedIn) return loggedIn;
 
-    init(
-      signInOption: signInOption,
-      scopes: scopes,
-      hostedDomain: hostedDomain,
-      listen: listen,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-      listener: listener,
-    );
+    _initFireBase(listener: listener);
 
     FirebaseUser user;
     try {
@@ -334,7 +237,7 @@ class Auth {
       user = null;
       _result = null;
     }
-    return user != null;
+    return user?.uid?.isNotEmpty ?? false;
   }
 
   static Future<List<String>> fetchSignInMethodsForEmail({
@@ -376,29 +279,12 @@ class Auth {
   static Future<bool> signInWithEmailAndPassword({
     @required String email,
     @required String password,
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
-    void listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
     void listener(FirebaseUser user),
   }) async {
-
     final loggedIn = await alreadyLoggedIn();
     if (loggedIn) return loggedIn;
 
-    init(
-      signInOption: signInOption,
-      scopes: scopes,
-      hostedDomain: hostedDomain,
-      listen: listen,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-      listener: listener,
-    );
+    _initFireBase(listener: listener);
 
     FirebaseUser user;
     try {
@@ -426,82 +312,17 @@ class Auth {
       _result = null;
       user = null;
     }
-    return user != null;
-  }
-
-  static Future<bool> signInWithFacebook(
-      {@required String id, @required String secret}) async {
-    id ??= "";
-    secret ??= "";
-    assert(id.isNotEmpty, "Must pass an id to signInWithFacebook() function!");
-    assert(secret.isNotEmpty,
-        "Must pass the secret to signInWithFacebook() function!");
-    if (id.isEmpty || secret.isEmpty) return Future.value(false);
-    final OAuth flutterOAuth = FlutterOAuth(Config(
-        "https://www.facebook.com/dialog/oauth",
-        "https://graph.facebook.com/v2.2/oauth/access_token",
-        id,
-        secret,
-        "http://localhost:8080/",
-        "code"));
-    Token token = await flutterOAuth.performAuthorization();
-    AuthCredential credential =
-        FacebookAuthProvider.getCredential(accessToken: token.accessToken);
-    return signInWithCredential(credential: credential);
-  }
-
-  static Future<bool> signInWithTwitter(
-      {@required String key,
-      @required String secret,
-      @required String callbackURI}) async {
-    key ??= "";
-    secret ??= "";
-    callbackURI ??= "";
-    assert(key.isNotEmpty, "Must pass an key to signInWithTwitter() function!");
-    assert(secret.isNotEmpty,
-        "Must pass the secret to signInWithTwitter() function!");
-    assert(callbackURI.isNotEmpty,
-        "Must pass the callback URI to signInWithTwitter() function!");
-    if (key.isEmpty || secret.isEmpty || callbackURI.isEmpty)
-      return Future.value(false);
-    final OAuth flutterOAuth = FlutterOAuth(Config(
-        "https://api.twitter.com/oauth/request_token",
-        "https://api.twitter.com/oauth/authenticate",
-        key,
-        secret,
-        callbackURI,
-        "code"));
-    Token accessToken = await flutterOAuth.performAuthorization();
-    AuthCredential credential = TwitterAuthProvider.getCredential(
-        authToken: accessToken.accessToken, authTokenSecret: secret);
-    return signInWithCredential(credential: credential);
+    return user?.uid?.isNotEmpty ?? false;
   }
 
   static Future<bool> signInWithCredential({
     @required AuthCredential credential,
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
-    void listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
     void listener(FirebaseUser user),
   }) async {
-
     final loggedIn = await alreadyLoggedIn();
     if (loggedIn) return loggedIn;
 
-    init(
-      signInOption: signInOption,
-      scopes: scopes,
-      hostedDomain: hostedDomain,
-      listen: listen,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-      listener: listener,
-    );
+    _initFireBase(listener: listener);
 
     FirebaseUser user;
     try {
@@ -528,34 +349,17 @@ class Auth {
       _result = null;
       user = null;
     }
-    return user != null;
+    return user?.uid?.isNotEmpty ?? false;
   }
 
   static Future<bool> signInWithCustomToken({
     @required String token,
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
-    void listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
     void listener(FirebaseUser user),
   }) async {
-
     final loggedIn = await alreadyLoggedIn();
     if (loggedIn) return loggedIn;
 
-    init(
-      signInOption: signInOption,
-      scopes: scopes,
-      hostedDomain: hostedDomain,
-      listen: listen,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-      listener: listener,
-    );
+    _initFireBase(listener: listener);
 
     FirebaseUser user;
     try {
@@ -575,7 +379,7 @@ class Auth {
       _result = null;
       user = null;
     }
-    return user != null;
+    return user?.uid?.isNotEmpty ?? false;
   }
 
   static Future<FirebaseUser> fireBaseUser() async {
@@ -659,60 +463,24 @@ class Auth {
 
   /// Log into Firebase using Google
   static Future<bool> logInWithGoogle({
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
     Null listen(GoogleSignInAccount user),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
-    Null listener(FirebaseUser user),
   }) async {
     /// Attempt to sign in without user interaction
-    bool logIn = await signInSilently(
-        signInOption: signInOption,
-        scopes: scopes,
-        hostedDomain: hostedDomain,
-        listen: listen,
-        onError: onError,
-        onDone: onDone,
-        cancelOnError: cancelOnError,
-        suppressErrors: true);
+    bool logIn = await signInSilently(listen: listen, suppressErrors: true);
 
     if (!logIn) {
       /// Force the user to interactively sign in
-      logIn = await signIn(
-          signInOption: signInOption,
-          scopes: scopes,
-          hostedDomain: hostedDomain,
-          listen: listen,
-          onError: onError,
-          onDone: onDone,
-          cancelOnError: cancelOnError);
+      logIn = await signIn(listen: listen);
     }
     return logIn;
   }
 
   /// Sign into Google
   static Future<bool> signInSilently({
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
     Null listen(GoogleSignInAccount user),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
     bool suppressErrors = true,
   }) async {
-    init(
-      signInOption: signInOption,
-      scopes: scopes,
-      hostedDomain: hostedDomain,
-      listen: listen,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-    );
+    _initListen(listen: listen);
 
     // Attempt to get the currently authenticated user
     GoogleSignInAccount currentUser = _googleSignIn.currentUser;
@@ -759,23 +527,9 @@ class Auth {
 
   /// Sign into Google
   static Future<bool> signIn({
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
     Null listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
   }) async {
-    init(
-      signInOption: signInOption,
-      scopes: scopes,
-      hostedDomain: hostedDomain,
-      listen: listen,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-    );
+    _initListen(listen: listen);
 
     // Attempt to get the currently authenticated user
     GoogleSignInAccount currentUser = _googleSignIn.currentUser;
@@ -843,6 +597,54 @@ class Auth {
     return set;
   }
 
+  static Future<bool> signInWithFacebook(
+      {@required String id, @required String secret}) async {
+    id ??= "";
+    secret ??= "";
+    assert(id.isNotEmpty, "Must pass an id to signInWithFacebook() function!");
+    assert(secret.isNotEmpty,
+        "Must pass the secret to signInWithFacebook() function!");
+    if (id.isEmpty || secret.isEmpty) return Future.value(false);
+    final OAuth flutterOAuth = FlutterOAuth(Config(
+        "https://www.facebook.com/dialog/oauth",
+        "https://graph.facebook.com/v2.2/oauth/access_token",
+        id,
+        secret,
+        "http://localhost:8080/",
+        "code"));
+    Token token = await flutterOAuth.performAuthorization();
+    AuthCredential credential =
+        FacebookAuthProvider.getCredential(accessToken: token.accessToken);
+    return signInWithCredential(credential: credential);
+  }
+
+  static Future<bool> signInWithTwitter(
+      {@required String key,
+      @required String secret,
+      @required String callbackURI}) async {
+    key ??= "";
+    secret ??= "";
+    callbackURI ??= "";
+    assert(key.isNotEmpty, "Must pass an key to signInWithTwitter() function!");
+    assert(secret.isNotEmpty,
+        "Must pass the secret to signInWithTwitter() function!");
+    assert(callbackURI.isNotEmpty,
+        "Must pass the callback URI to signInWithTwitter() function!");
+    if (key.isEmpty || secret.isEmpty || callbackURI.isEmpty)
+      return Future.value(false);
+    final OAuth flutterOAuth = FlutterOAuth(Config(
+        "https://api.twitter.com/oauth/request_token",
+        "https://api.twitter.com/oauth/authenticate",
+        key,
+        secret,
+        callbackURI,
+        "code"));
+    Token accessToken = await flutterOAuth.performAuthorization();
+    AuthCredential credential = TwitterAuthProvider.getCredential(
+        authToken: accessToken.accessToken, authTokenSecret: secret);
+    return signInWithCredential(credential: credential);
+  }
+
   static Future<Null> signOut() async {
     // Sign out with FireBase
     await _fireBaseAuth?.signOut();
@@ -873,13 +675,11 @@ class Auth {
 
   /// Access to the GoogleSignIn Object
   static GoogleSignIn get googleSignIn {
-    if (_googleSignIn == null) init();
     return _googleSignIn;
   }
 
   /// The currently signed in account, or null if the user is signed out.
   static GoogleSignInAccount get googleUser {
-    if (_googleSignIn == null) init();
     return _googleSignIn?.currentUser;
   }
 
@@ -891,26 +691,28 @@ class Auth {
     return _setUserFromFireBase(_user);
   }
 
+  static AuthResult _result;
+  static AuthResult get result => _result;
+
+  static FirebaseUser _user;
+  static FirebaseUser get user => _user;
+
+  static Exception _ex;
+  static Exception get ex => _ex;
+  static String get message => _ex?.toString() ?? '';
+
+  /// Get the last error but clear it.
+  static Exception getError() {
+    Exception e = _ex;
+    _ex = null;
+    return e;
+  }
+
   static AdditionalUserInfo get userInfo => _result?.additionalUserInfo;
 
   static bool get isNewUser => _result?.additionalUserInfo?.isNewUser ?? false;
 
   static String get username => _result?.additionalUserInfo?.username ?? '';
-
-  static IdTokenResult _idTokenResult;
-  static IdTokenResult get idTokenResult => _idTokenResult;
-
-  static DateTime get expirationTime =>
-      _idTokenResult?.expirationTime ?? DateTime.now();
-
-  static DateTime get authTime => _idTokenResult?.authTime ?? DateTime.now();
-
-  static DateTime get issuedAtTime =>
-      _idTokenResult?.issuedAtTime ?? DateTime.now();
-
-  static String get signInProvider => _idTokenResult?.signInProvider ?? '';
-
-  static Map<dynamic, dynamic> get claims => _idTokenResult?.claims ?? {};
 
   static String _providerId = '';
   static String get providerId =>
@@ -942,4 +744,19 @@ class Auth {
 
   static String _accessToken = '';
   static String get accessToken => _accessToken;
+
+  static IdTokenResult _idTokenResult;
+  static IdTokenResult get idTokenResult => _idTokenResult;
+
+  static DateTime get expirationTime =>
+      _idTokenResult?.expirationTime ?? DateTime.now();
+
+  static DateTime get authTime => _idTokenResult?.authTime ?? DateTime.now();
+
+  static DateTime get issuedAtTime =>
+      _idTokenResult?.issuedAtTime ?? DateTime.now();
+
+  static String get signInProvider => _idTokenResult?.signInProvider ?? '';
+
+  static Map<dynamic, dynamic> get claims => _idTokenResult?.claims ?? {};
 }
