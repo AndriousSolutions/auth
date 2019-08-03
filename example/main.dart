@@ -10,7 +10,6 @@ import 'package:auth/auth.dart';
 
 import 'dialog.dart';
 
-
 void main() {
   runApp(
     MaterialApp(
@@ -37,15 +36,22 @@ class SignInDemoState extends State<SignInDemo>
 
     tabController = TabController(length: 2, vsync: this);
 
-    auth = Auth.init(listen: (account) {
-      loggedIn = account != null;
-      setState(() {});
-    }, listener: (user) {
-      loggedIn = user != null;
-      setState(() {});
-    });
+    auth = Auth.init(
+        scopes: [
+          'email',
+          'https://www.googleapis.com/auth/contacts.readonly',
+        ],
+        listener: (user) {
+          loggedIn = user != null;
+          setState(() {});
+        });
 
-    auth.signInSilently();
+    auth.signInSilently(
+      listen: (account) {
+        loggedIn = account != null;
+        setState(() {});
+      },
+    );
   }
 
   @override
@@ -87,18 +93,17 @@ class SignInDemoState extends State<SignInDemo>
 
   Widget _buildBody() {
     if (loggedIn) {
-      var googleSignIn = auth.googleUser?.id?.isNotEmpty ?? false;
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           ListTile(
-            leading: googleSignIn
+            leading: auth.signedInGoogle()
                 ? GoogleUserCircleAvatar(
                     identity: auth.googleUser,
                   )
                 : Text(''),
-            title: Text(auth.user?.displayName ?? ''),
-            subtitle: Text(auth.user?.email ?? ''),
+            title: Text(auth.displayName),
+            subtitle: Text(auth.email),
           ),
           const Text("Signed in successfully."),
           RaisedButton(
@@ -123,7 +128,7 @@ class SignInDemoState extends State<SignInDemo>
           RaisedButton(
             child: const Text('Sign In With Google'),
             onPressed: () {
-              auth.signInGoogle();
+              auth.signIn();
             },
           ),
           RaisedButton(
@@ -136,9 +141,8 @@ class SignInDemoState extends State<SignInDemo>
             child: const Text('Sign in with Email & Password'),
             onPressed: () async {
               List<String> ep = await dialogBox(context: context);
-              if(ep == null || ep.isEmpty) return;
-              auth.signInWithEmailAndPassword(
-                  email: ep[0], password: ep[1]);
+              if (ep == null || ep.isEmpty) return;
+              auth.signInWithEmailAndPassword(email: ep[0], password: ep[1]);
             },
           ),
         ],
@@ -147,24 +151,24 @@ class SignInDemoState extends State<SignInDemo>
   }
 
   Widget get _authResults => ListView(
-      padding: const EdgeInsets.all(30.0),
-      itemExtent: 80.0,
-      children: <Widget>[
-        Text("uid: ${auth.uid}"),
-        Text("name: ${auth.displayName }"),
-        Text("photo: ${auth.photoUrl}"),
-        Text("new login: ${auth.isNewUser}"),
-        Text("user name: ${auth.username}"),
-        Text("email: ${auth.email}"),
-        Text("email verified: ${auth.isEmailVerified}"),
-        Text("anonymous login: ${auth.isAnonymous}"),
-        Text("id token: ${auth.idToken}"),
-        Text("access token: ${auth.accessToken}"),
-        Text("information provider: ${auth.providerId}"),
-        Text("expire time: ${auth.expirationTime}"),
-        Text("auth time: ${auth.authTime}"),
-        Text("issued at: ${auth.issuedAtTime}"),
-        Text("signin provider: ${auth.signInProvider}"),
-      ],
-    );
+        padding: const EdgeInsets.all(30.0),
+        itemExtent: 80.0,
+        children: <Widget>[
+          Text("uid: ${auth.uid}"),
+          Text("name: ${auth.displayName}"),
+          Text("photo: ${auth.photoUrl}"),
+          Text("new login: ${auth.isNewUser}"),
+          Text("user name: ${auth.username}"),
+          Text("email: ${auth.email}"),
+          Text("email verified: ${auth.isEmailVerified}"),
+          Text("anonymous login: ${auth.isAnonymous}"),
+          Text("id token: ${auth.idToken}"),
+          Text("access token: ${auth.accessToken}"),
+          Text("information provider: ${auth.providerId}"),
+          Text("expire time: ${auth.expirationTime}"),
+          Text("auth time: ${auth.authTime}"),
+          Text("issued at: ${auth.issuedAtTime}"),
+          Text("signin provider: ${auth.signInProvider}"),
+        ],
+      );
 }

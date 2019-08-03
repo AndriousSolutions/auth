@@ -1,3 +1,8 @@
+## 2.1.0
+ August 02, 2019
+- Introduced signedInGoogle(), signedInFirebase()
+- Adjusted example main.dart
+
 ## 2.0.0
  August 02, 2019
 - Abandoned the Singleton design pattern

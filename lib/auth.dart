@@ -81,6 +81,20 @@ class Auth {
   static FirebaseAuth _fireBaseAuth;
   static GoogleSignIn _googleSignIn;
 
+  /// Important to call this function when terminating the you app.
+  void dispose() async {
+    await signOut();
+    _user = null;
+    _fireBaseAuth = null;
+    _googleSignIn = null;
+    _fireBaseListeners = null;
+    _googleListeners = null;
+    await _googleListener?.cancel();
+    await _firebaseListener?.cancel();
+    _googleListener = null;
+    _firebaseListener = null;
+  }
+
   StreamSubscription<FirebaseUser> _firebaseListener;
   StreamSubscription<GoogleSignInAccount> _googleListener;
 
@@ -117,20 +131,6 @@ class Auth {
   }
   GoogleSignIn _googleIn;
   GoogleSignIn get googleSignIn => _googleIn;
-
-  /// Important to call this function when terminating the you app.
-  void dispose() async {
-    await signOut();
-    _user = null;
-    _fireBaseAuth = null;
-    _googleSignIn = null;
-    _fireBaseListeners = null;
-    _googleListeners = null;
-    await _googleListener?.cancel();
-    await _firebaseListener?.cancel();
-    _googleListener = null;
-    _firebaseListener = null;
-  }
 
   _initFireBase({
     void listener(FirebaseUser user),
@@ -590,7 +590,7 @@ class Auth {
     return _googleSignIn?.disconnect();
   }
 
-  Future<Null> signOut() async {
+  Future<void> signOut() async {
     // Sign out with FireBase
     await _fireBaseAuth?.signOut();
     // Sign out with google
@@ -623,7 +623,7 @@ class Auth {
     return user;
   }
 
-  void _setError(Object ex){
+  void _setError(Object ex) {
     if (ex is! Exception) {
       _ex = Exception(ex.toString());
     } else {
@@ -637,8 +637,14 @@ class Auth {
   /// The currently signed in account, or null if the user is signed out.
   GoogleSignInAccount get googleUser => _googleSignIn?.currentUser;
 
-  FirebaseUser _user;
+  /// True if signed into a Google account
+  bool signedInGoogle() => googleUser != null;
+
+  /// True if signed into Firebase
+  bool signedInFirebase() => !signedInGoogle();
+
   FirebaseUser get user => _user;
+  FirebaseUser _user;
 
   Exception _ex;
   Exception get ex => _ex;
