@@ -1,9 +1,14 @@
+## 2.0.0
+ August 02, 2019
+- Abandoned the Singleton design pattern
+- Factory constructor to ensure only one Auth instance.
+- Renamed signIn functions.
+
 ## 1.3.1
  August 02, 2019
 - Removed properties: signInOption scopes hostedDomain onError, onDone, cancelOnError
 - Set{} for list of listeners
 - Rearranged code for readability
-
 
 ## 1.3.0
  August 02, 2019

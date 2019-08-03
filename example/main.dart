@@ -3,16 +3,19 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'password.dart';
+
+import 'package:google_sign_in/google_sign_in.dart' show GoogleUserCircleAvatar;
 
 import 'package:auth/auth.dart';
+
+import 'dialog.dart';
+
 
 void main() {
   runApp(
     MaterialApp(
-      title: 'Google Sign In',
       home: SignInDemo(),
+      debugShowCheckedModeBanner: false,
     ),
   );
 }
@@ -22,50 +25,93 @@ class SignInDemo extends StatefulWidget {
   State createState() => SignInDemoState();
 }
 
-class SignInDemoState extends State<SignInDemo> {
-  GoogleSignInAccount _currentUser;
+class SignInDemoState extends State<SignInDemo>
+    with SingleTickerProviderStateMixin {
+  Auth auth;
+  bool loggedIn = false;
+  TabController tabController;
 
   @override
   void initState() {
     super.initState();
 
-    Auth.init(
-      listen: (account) {
-        setState(() {
-          _currentUser = account;
-        });
-      },
-    );
+    tabController = TabController(length: 2, vsync: this);
 
-    Auth.signInSilently();
+    auth = Auth.init(listen: (account) {
+      loggedIn = account != null;
+      setState(() {});
+    }, listener: (user) {
+      loggedIn = user != null;
+      setState(() {});
+    });
+
+    auth.signInSilently();
   }
 
   @override
   void dispose() {
-    Auth.dispose();
+    /// Important to dispose of the Auth's resources.
+    auth.dispose();
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text("Sign In Demo"),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: "Sign In"),
+              Tab(text: "Results"),
+            ],
+            controller: tabController,
+          ),
+        ),
+        body: Center(
+          child: TabBarView(
+            controller: tabController,
+            children: <Widget>[
+              ConstrainedBox(
+                constraints: const BoxConstraints.expand(),
+                child: _buildBody(),
+              ),
+              ConstrainedBox(
+                constraints: const BoxConstraints.expand(),
+                child: _authResults,
+              ),
+            ],
+          ),
+        ));
+  }
+
   Widget _buildBody() {
-    if (_currentUser != null) {
+    if (loggedIn) {
+      var googleSignIn = auth.googleUser?.id?.isNotEmpty ?? false;
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           ListTile(
-            leading: GoogleUserCircleAvatar(
-              identity: _currentUser,
-            ),
-            title: Text(_currentUser.displayName),
-            subtitle: Text(_currentUser.email),
+            leading: googleSignIn
+                ? GoogleUserCircleAvatar(
+                    identity: auth.googleUser,
+                  )
+                : Text(''),
+            title: Text(auth.user?.displayName ?? ''),
+            subtitle: Text(auth.user?.email ?? ''),
           ),
           const Text("Signed in successfully."),
           RaisedButton(
-            child: const Text('SIGN OUT'),
-            onPressed: _signOut,
+            child: const Text('Sign Out'),
+            onPressed: () {
+              auth.signOut();
+            },
           ),
           RaisedButton(
-            child: const Text('SIGN OUT & DISCONNECT'),
-            onPressed: _disconnect,
+            child: const Text('Sign Out & Disconnect'),
+            onPressed: () {
+              auth.disconnect();
+            },
           ),
         ],
       );
@@ -75,52 +121,50 @@ class SignInDemoState extends State<SignInDemo> {
         children: <Widget>[
           const Text("You are not currently signed in."),
           RaisedButton(
-            child: const Text('GOOGLE SIGN IN'),
-            onPressed: _signIn,
+            child: const Text('Sign In With Google'),
+            onPressed: () {
+              auth.signInGoogle();
+            },
           ),
           RaisedButton(
-            child: const Text('SIGN IN WITH EMAIL & PASSWORD'),
-            onPressed: _signInWithEmailAndPassword,
+            child: const Text('Log in anonymously'),
+            onPressed: () {
+              auth.signInAnonymously();
+            },
           ),
           RaisedButton(
-            child: const Text('SIGN IN ANONYMOUSLY'),
-            onPressed: _signInAnonymously,
+            child: const Text('Sign in with Email & Password'),
+            onPressed: () async {
+              List<String> ep = await dialogBox(context: context);
+              if(ep == null || ep.isEmpty) return;
+              auth.signInWithEmailAndPassword(
+                  email: ep[0], password: ep[1]);
+            },
           ),
         ],
       );
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Authentication Sign In'),
-        ),
-        body: ConstrainedBox(
-          constraints: const BoxConstraints.expand(),
-          child: _buildBody(),
-        ));
-  }
-
-  void _signOut() {
-    Auth.signOut();
-  }
-
-  void _disconnect() {
-    Auth.disconnect();
-  }
-
-  void _signIn() {
-    Auth.signIn();
-  }
-
-  void _signInWithEmailAndPassword() {
-    Auth.signInWithEmailAndPassword(
-        email: hiddenEmail, password: hiddenPassword);
-  }
-
-  void _signInAnonymously() {
-    Auth.signInAnonymously();
-  }
+  Widget get _authResults => ListView(
+      padding: const EdgeInsets.all(30.0),
+      itemExtent: 80.0,
+      children: <Widget>[
+        Text("uid: ${auth.uid}"),
+        Text("name: ${auth.displayName }"),
+        Text("photo: ${auth.photoUrl}"),
+        Text("new login: ${auth.isNewUser}"),
+        Text("user name: ${auth.username}"),
+        Text("email: ${auth.email}"),
+        Text("email verified: ${auth.isEmailVerified}"),
+        Text("anonymous login: ${auth.isAnonymous}"),
+        Text("id token: ${auth.idToken}"),
+        Text("access token: ${auth.accessToken}"),
+        Text("information provider: ${auth.providerId}"),
+        Text("expire time: ${auth.expirationTime}"),
+        Text("auth time: ${auth.authTime}"),
+        Text("issued at: ${auth.issuedAtTime}"),
+        Text("signin provider: ${auth.signInProvider}"),
+      ],
+    );
 }
