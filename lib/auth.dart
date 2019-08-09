@@ -160,9 +160,11 @@ class Auth {
     _firebaseRunning = false;
   }
 
-  fireBaseListener(FireBaseListener f) => _fireBaseListeners.add(f);
+  void fireBaseListener(FireBaseListener f) => _fireBaseListeners.add(f);
 
-  removeListener(FireBaseListener f) => _fireBaseListeners.remove(f);
+  set listener(FireBaseListener f) => _fireBaseListeners.add(f);
+
+  void removeListener(FireBaseListener f) => _fireBaseListeners.remove(f);
 
   Set<GoogleListener> _googleListeners = Set();
   bool _googleRunning = false;
@@ -215,6 +217,8 @@ class Auth {
   }
 
   void googleListener(GoogleListener f) => _googleListeners.add(f);
+
+  set listen(FireBaseListener f) => _fireBaseListeners.add(f);
 
   void removeListen(GoogleListener f) => _googleListeners.remove(f);
 

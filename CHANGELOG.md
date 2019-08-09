@@ -1,3 +1,7 @@
+## 3.1.0
+- void return type in some functions.
+- Introduced the setters, listener and listen.
+
 ## 3.0.0
  August 06, 2019
 - Removed parameters onError, onDone(), and cancelOnError from the Constructor
