@@ -1,3 +1,9 @@
+## 3.0.0
+ August 06, 2019
+- Removed parameters onError, onDone(), and cancelOnError from the Constructor
+- Introduced getEventErrors() and eventErrors
+- CustomAlertDialog class in example app
+
 ## 2.1.0
  August 02, 2019
 - Introduced signedInGoogle(), signedInFirebase()

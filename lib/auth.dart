@@ -42,7 +42,6 @@ import 'package:google_sign_in/google_sign_in.dart'
         GoogleSignInAccount,
         GoogleSignInAuthentication,
         SignInOption;
-
 import 'package:auth/flutteroauth.dart';
 
 typedef void GoogleListener(GoogleSignInAccount event);
@@ -54,10 +53,7 @@ class Auth {
     SignInOption signInOption,
     List<String> scopes,
     String hostedDomain,
-    void listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
+    void listen(GoogleSignInAccount account),
     void listener(FirebaseUser user),
   }) {
     Auth auth;
@@ -67,9 +63,6 @@ class Auth {
           scopes: scopes,
           hostedDomain: hostedDomain,
           listen: listen,
-          onError: onError,
-          onDone: onDone,
-          cancelOnError: cancelOnError,
           listener: listener);
       auth = _this;
     }
@@ -102,17 +95,12 @@ class Auth {
     SignInOption signInOption,
     List<String> scopes,
     String hostedDomain,
-    void listen(GoogleSignInAccount event),
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
+    void listen(GoogleSignInAccount account),
     void listener(FirebaseUser user),
   }) {
     _initFireBase(
-        listener: listener,
-        onError: onError,
-        onDone: onDone,
-        cancelOnError: cancelOnError);
+      listener: listener,
+    );
 
     if (_googleSignIn == null) {
       _googleSignIn = GoogleSignIn(
@@ -123,10 +111,8 @@ class Auth {
       _googleIn = _googleSignIn;
 
       _initListen(
-          listen: listen,
-          onError: onError,
-          onDone: onDone,
-          cancelOnError: cancelOnError);
+        listen: listen,
+      );
     }
   }
   GoogleSignIn _googleIn;
@@ -136,18 +122,23 @@ class Auth {
     void listener(FirebaseUser user),
     Function onError,
     void onDone(),
-    bool cancelOnError,
+    bool cancelOnError = false,
   }) {
+    // Clear any errors first.
+    getError();
+    getEventError();
+
     if (_fireBaseAuth == null) {
       _fireBaseAuth = FirebaseAuth.instance;
       _firebaseListener = _fireBaseAuth.onAuthStateChanged.listen(
           _listFireBaseListeners,
-          onError: onError,
+          onError: _eventError,
           onDone: onDone,
           cancelOnError: cancelOnError);
       // Store in an instance variable
       _fbAuth = _fireBaseAuth;
     }
+
     if (listener != null) {
       _fireBaseListeners.add(listener);
     }
@@ -177,33 +168,50 @@ class Auth {
   bool _googleRunning = false;
 
   void _initListen({
-    void listen(GoogleSignInAccount event),
+    void listen(GoogleSignInAccount account),
     Function onError,
     void onDone(),
-    bool cancelOnError,
+    bool cancelOnError = false,
   }) async {
-    if (_googleSignIn != null) {
-      if (listen != null) _googleListeners.add(listen);
+    // Clear any errors first.
+    getError();
+    getEventError();
 
-      if (_googleListener == null) {
-        _googleListener = _googleSignIn.onCurrentUserChanged.listen(
-            _listGoogleListeners,
-            onError: onError,
-            onDone: onDone,
-            cancelOnError: cancelOnError);
-      }
+    if (listen != null) _googleListeners.add(listen);
+
+    if (_googleListener == null) {
+      _googleListener = _googleSignIn?.onCurrentUserChanged?.listen(
+          _listGoogleListeners,
+          onError: _eventError,
+          onDone: onDone,
+          cancelOnError: cancelOnError);
     }
   }
 
   /// async so you'll come back if there's a setState() called in the listener.
-  void _listGoogleListeners(GoogleSignInAccount user) async {
+  void _listGoogleListeners(GoogleSignInAccount account) async {
     if (_googleRunning) return;
     _googleRunning = true;
-    await _setFireBaseUserFromGoogle(user);
+    await _setFireBaseUserFromGoogle(account);
     for (var listener in _googleListeners) {
-      listener(user);
+      listener(account);
     }
     _googleRunning = false;
+  }
+
+  List<Exception> _eventErrors = List();
+  List<Exception> getEventError() {
+    var errors = _eventErrors;
+    _eventErrors = null;
+    return errors;
+  }
+
+  bool get eventErrors => _eventErrors.isNotEmpty;
+
+  /// Record errors for the event listeners.
+  void _eventError(Object ex) {
+    if (ex is! Exception) ex = Exception(ex.toString());
+    _eventErrors.add(ex);
   }
 
   void googleListener(GoogleListener f) => _googleListeners.add(f);
@@ -402,9 +410,9 @@ class Auth {
 
     _idTokenResult = await user?.getIdToken();
 
-    _idToken = _idTokenResult?.token ?? '';
+    _idToken = _idTokenResult?.token ?? "";
 
-    _accessToken = '';
+    _accessToken = "";
 
 //    return user?.uid?.isNotEmpty ?? false;
 //  }
@@ -413,15 +421,15 @@ class Auth {
 
     _isAnonymous = user?.isAnonymous ?? true;
 
-    _uid = user?.uid ?? '';
+    _uid = user?.uid ?? "";
 
-    _displayName = user?.displayName ?? '';
+    _displayName = user?.displayName ?? "";
 
-    _photoUrl = user?.photoUrl ?? '';
+    _photoUrl = user?.photoUrl ?? "";
 
-    _email = user?.email ?? '';
+    _email = user?.email ?? "";
 
-    _phoneNumber = user?.phoneNumber ?? '';
+    _phoneNumber = user?.phoneNumber ?? "";
 
     return _uid.isNotEmpty;
   }
@@ -529,9 +537,9 @@ class Auth {
 
     _result = result;
 
-    _idToken = auth?.idToken ?? '';
+    _idToken = auth?.idToken ?? "";
 
-    _accessToken = auth?.accessToken ?? '';
+    _accessToken = auth?.accessToken ?? "";
 
     return set;
   }
@@ -604,7 +612,7 @@ class Auth {
 
   /// FireBase Logged in.
   Future<bool> isLoggedIn() async {
-    bool loggedIn = _user?.uid?.isNotEmpty;
+    bool loggedIn = _user?.uid?.isNotEmpty ?? false;
     if (!loggedIn) {
       FirebaseUser user = await currentUser();
       loggedIn = user?.uid?.isNotEmpty ?? false;
@@ -647,8 +655,9 @@ class Auth {
   FirebaseUser _user;
 
   Exception _ex;
+  @deprecated
   Exception get ex => _ex;
-  String get message => _ex?.toString() ?? '';
+  String get message => _ex?.toString() ?? "";
 
   /// Get the last error but clear it.
   Exception getError() {
@@ -661,33 +670,33 @@ class Auth {
 
   bool get isNewUser => _result?.additionalUserInfo?.isNewUser ?? false;
 
-  String get username => _result?.additionalUserInfo?.username ?? '';
+  String get username => _result?.additionalUserInfo?.username ?? "";
 
   String _idToken;
-  String get idToken => _idToken ?? '';
+  String get idToken => _idToken ?? "";
 
   String _accessToken;
-  String get accessToken => _accessToken ?? '';
+  String get accessToken => _accessToken ?? "";
 
   IdTokenResult _idTokenResult;
   IdTokenResult get idTokenResult => _idTokenResult;
 
   String get providerId =>
-      _result?.additionalUserInfo?.providerId ?? user?.providerId ?? '';
+      _result?.additionalUserInfo?.providerId ?? user?.providerId ?? "";
 
-  String _uid = '';
+  String _uid = "";
   String get uid => _uid;
 
-  String _displayName = '';
+  String _displayName = "";
   String get displayName => _displayName;
 
-  String _photoUrl = '';
+  String _photoUrl = "";
   String get photoUrl => _photoUrl;
 
-  String _email = '';
+  String _email = "";
   String get email => _email;
 
-  String _phoneNumber = '';
+  String _phoneNumber = "";
   String get phoneNumber => _phoneNumber;
 
   bool _isEmailVerified = false;
@@ -703,7 +712,7 @@ class Auth {
 
   DateTime get issuedAtTime => _idTokenResult?.issuedAtTime ?? DateTime.now();
 
-  String get signInProvider => _idTokenResult?.signInProvider ?? '';
+  String get signInProvider => _idTokenResult?.signInProvider ?? "";
 
   Map<dynamic, dynamic> get claims => _idTokenResult?.claims ?? {};
 }
