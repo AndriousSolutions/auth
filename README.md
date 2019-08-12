@@ -1,5 +1,6 @@
 # Auth Class
 This class library works with two plugins: [firebase_auth ](https://pub.dartlang.org/packages/firebase_auth) and [google_sign_in](https://pub.dartlang.org/packages/google_sign_in) to log into a Firebase backend using a Firebase account or a Google account. If you're familiar with these plugins, you will find the same functions used in this class library. 
+[![Auth Package](https://user-images.githubusercontent.com/32497443/62844302-fcd4fd80-bc85-11e9-9681-a33885515dc6.png)](https://pub.dev/packages/auth)
 ## How it Works
 Below are a series of screenshots depicting how to initialize and authenticate or 'sign in' an individual into your app's Firebase database using a either an email and password or a Google account. The following will sign in 'silently' (i.e. automatically if the user had already signed in in the past.). Note, settings are passed as parameters in the screenshot below. 
 ![09inistate](https://user-images.githubusercontent.com/32497443/62817460-d9327b80-bafc-11e9-9e96-4ce2682d49e5.png)
