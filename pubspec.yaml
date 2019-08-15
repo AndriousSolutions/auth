@@ -1,6 +1,6 @@
 name: auth
 description: Authorization Library Package to log into Google, Facebook, or by Username and Password.
-version: 3.1.0
+version: 3.1.1
 author: Greg Perry <support@andrioussolutions.com>
 homepage: https://github.com/AndriousSolutions/auth
 repository: https://github.com/AndriousSolutions/auth

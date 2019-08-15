@@ -1,3 +1,6 @@
+## 3.1.1
+- set listen(GoogleListener f) => _googleListeners.add(f);
+
 ## 3.1.0
 - void return type in some functions.
 - Introduced the setters, listener and listen.

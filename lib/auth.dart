@@ -218,7 +218,7 @@ class Auth {
 
   void googleListener(GoogleListener f) => _googleListeners.add(f);
 
-  set listen(FireBaseListener f) => _fireBaseListeners.add(f);
+  set listen(GoogleListener f) => _googleListeners.add(f);
 
   void removeListen(GoogleListener f) => _googleListeners.remove(f);
 
