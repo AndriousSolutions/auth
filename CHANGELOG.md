@@ -1,3 +1,12 @@
+## 3.2.0
+- Provided new functions:
+getIdToken();              updatePhoneNumberCredential(); 
+linkWithCredential();      updatePassword();
+sendEmailVerification();   updateProfile(); 
+reload();                  reauthenticateWithCredential();         
+delete();                  unlinkFromProvider();
+updateEmail(); 
+  
 ## 3.1.1
 - set listen(GoogleListener f) => _googleListeners.add(f);
 

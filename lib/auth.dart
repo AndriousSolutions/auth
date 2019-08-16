@@ -35,7 +35,8 @@ import 'package:firebase_auth/firebase_auth.dart'
         FirebaseUser,
         IdTokenResult,
         GoogleAuthProvider,
-        TwitterAuthProvider;
+        TwitterAuthProvider,
+        UserUpdateInfo;
 import 'package:google_sign_in/google_sign_in.dart'
     show
         GoogleSignIn,
@@ -232,7 +233,17 @@ class Auth {
             googleUser.id == fireBaseUser?.providerData[1]?.uid);
   }
 
-  /// Firebase Login.
+  /// Asynchronously creates and becomes an anonymous user.
+  ///
+  /// If there is already an anonymous user signed in, that user will be
+  /// returned instead. If there is any other existing user signed in, that
+  /// user will be signed out.
+  ///
+  /// **Important**: You must enable Anonymous accounts in the Auth section
+  /// of the Firebase console before being able to use them.
+  ///
+  /// Errors:
+  ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Anonymous accounts are not enabled.
   Future<bool> signInAnonymously({
     void listener(FirebaseUser user),
   }) async {
@@ -254,6 +265,16 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
+
+  /// Tries to create a new user account with the given email address and password.
+  ///
+  /// If successful, it also signs the user in into the app and updates
+  /// the [onAuthStateChanged] stream.
+  ///
+  /// Errors:
+  ///   • `ERROR_WEAK_PASSWORD` - If the password is not strong enough.
+  ///   • `ERROR_INVALID_EMAIL` - If the email address is malformed.
+  ///   • `ERROR_EMAIL_ALREADY_IN_USE` - If the email is already in use by a different account.
   Future<bool> createUserWithEmailAndPassword({
     @required String email,
     @required String password,
@@ -281,6 +302,16 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
+
+  /// Returns a list of sign-in methods that can be used to sign in a given
+  /// user (identified by its main email address).
+  ///
+  /// This method is useful when you support multiple authentication mechanisms
+  /// if you want to implement an email-first authentication flow.
+  ///
+  /// Errors:
+  ///   • `ERROR_INVALID_CREDENTIAL` - If the [email] address is malformed.
+  ///   • `ERROR_USER_NOT_FOUND` - If there is no user corresponding to the given [email] address.
   Future<List<String>> fetchSignInMethodsForEmail({
     @required String email,
   }) async {
@@ -295,6 +326,14 @@ class Auth {
     return providers;
   }
 
+
+  /// Triggers the Firebase Authentication backend to send a password-reset
+  /// email to the given email address, which must correspond to an existing
+  /// user of your app.
+  ///
+  /// Errors:
+  ///   • `ERROR_INVALID_EMAIL` - If the [email] address is malformed.
+  ///   • `ERROR_USER_NOT_FOUND` - If there is no user corresponding to the given [email] address.
   Future<bool> sendPasswordResetEmail({
     @required String email,
   }) async {
@@ -309,6 +348,21 @@ class Auth {
     return reset;
   }
 
+  /// Tries to sign in a user with the given email address and password.
+  ///
+  /// If successful, it also signs the user in into the app and updates
+  /// the [onAuthStateChanged] stream.
+  ///
+  /// **Important**: You must enable Email & Password accounts in the Auth
+  /// section of the Firebase console before being able to use them.
+  ///
+  /// Errors:
+  ///   • `ERROR_INVALID_EMAIL` - If the [email] address is malformed.
+  ///   • `ERROR_WRONG_PASSWORD` - If the [password] is wrong.
+  ///   • `ERROR_USER_NOT_FOUND` - If there is no user corresponding to the given [email] address, or if the user has been deleted.
+  ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
+  ///   • `ERROR_TOO_MANY_REQUESTS` - If there was too many attempts to sign in as this user.
+  ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Email & Password accounts are not enabled.
   Future<bool> signInWithEmailAndPassword({
     @required String email,
     @required String password,
@@ -340,6 +394,28 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
+
+  /// Asynchronously signs in to Firebase with the given 3rd-party credentials
+  /// (e.g. a Facebook login Access Token, a Google ID Token/Access Token pair,
+  /// etc.) and returns additional identity provider data.
+  ///
+  /// If successful, it also signs the user in into the app and updates
+  /// the [onAuthStateChanged] stream.
+  ///
+  /// If the user doesn't have an account already, one will be created automatically.
+  ///
+  /// **Important**: You must enable the relevant accounts in the Auth section
+  /// of the Firebase console before being able to use them.
+  ///
+  /// Errors:
+  ///   • `ERROR_INVALID_CREDENTIAL` - If the credential data is malformed or has expired.
+  ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
+  ///   • `ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL` - If there already exists an account with the email address asserted by Google.
+  ///       Resolve this case by calling [fetchSignInMethodsForEmail] and then asking the user to sign in using one of them.
+  ///       This error will only be thrown if the "One account per email address" setting is enabled in the Firebase console (recommended).
+  ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Google accounts are not enabled.
+  ///   • `ERROR_INVALID_ACTION_CODE` - If the action code in the link is malformed, expired, or has already been used.
+  ///       This can only occur when using [EmailAuthProvider.getCredentialWithLink] to obtain the credential.
   Future<bool> signInWithCredential({
     @required AuthCredential credential,
     void listener(FirebaseUser user),
@@ -369,6 +445,26 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
+  /// Tries to sign in a user with a given Custom Token [token].
+  ///
+  /// A listener can also be provided.
+  /// 
+  /// If successful, it also signs the user in into the app and updates
+  /// the [onAuthStateChanged] stream.
+  ///
+  /// Use this method after you retrieve a Firebase Auth Custom Token from your server.
+  ///
+  /// If the user identified by the [uid] specified in the token doesn't
+  /// have an account already, one will be created automatically.
+  ///
+  /// Read how to use Custom Token authentication and the cases where it is
+  /// useful in [the guides](https://firebase.google.com/docs/auth/android/custom-auth).
+  ///
+  /// Errors:
+  ///   • `ERROR_INVALID_CUSTOM_TOKEN` - The custom token format is incorrect.
+  ///     Please check the documentation.
+  ///   • `ERROR_CUSTOM_TOKEN_MISMATCH` - Invalid configuration.
+  ///     Ensure your app's SHA1 is correct in the Firebase console.
   Future<bool> signInWithCustomToken({
     @required String token,
     void listener(FirebaseUser user),
@@ -399,6 +495,9 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
+  /// Sets the user-facing language code for auth operations that can be
+  /// internationalized, such as [sendEmailVerification]. This language
+  /// code should follow the conventions defined by the IETF in BCP47.
   Future<void> setLanguageCode(String language) async {
     try {
       await _fireBaseAuth.setLanguageCode(language).catchError((ex) {
@@ -438,7 +537,212 @@ class Auth {
     return _uid.isNotEmpty;
   }
 
-  /// Log into Firebase using Google
+  /// Obtains the id token result for the current user, forcing a [refresh] if desired.
+  ///
+  /// Useful when authenticating against your own backend. Use our server
+  /// SDKs or follow the official documentation to securely verify the
+  /// integrity and validity of this token.
+  ///
+  /// Completes with an error if the user is signed out.
+  Future<IdTokenResult> getIdToken({bool refresh = false}) async {
+    IdTokenResult result;
+    try {
+      result = await _user?.getIdToken(refresh: refresh);
+    } catch (ex) {
+      _setError(ex);
+      result = null;
+    }
+    return result;
+  }
+
+  /// Associates a user account from a third-party identity provider with this
+  /// user and returns additional identity provider data.
+  ///
+  /// This allows the user to sign in to this account in the future with
+  /// the given account.
+  ///
+  /// Errors:
+  ///   • `ERROR_WEAK_PASSWORD` - If the password is not strong enough.
+  ///   • `ERROR_INVALID_CREDENTIAL` - If the credential is malformed or has expired.
+  ///   • `ERROR_EMAIL_ALREADY_IN_USE` - If the email is already in use by a different account.
+  ///   • `ERROR_CREDENTIAL_ALREADY_IN_USE` - If the account is already in use by a different account, e.g. with phone auth.
+  ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
+  ///   • `ERROR_REQUIRES_RECENT_LOGIN` - If the user's last sign-in time does not meet the security threshold. Use reauthenticate methods to resolve.
+  ///   • `ERROR_PROVIDER_ALREADY_LINKED` - If the current user already has an account of this type linked.
+  ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that this type of account is not enabled.
+  ///   • `ERROR_INVALID_ACTION_CODE` - If the action code in the link is malformed, expired, or has already been used.
+  ///       This can only occur when using [EmailAuthProvider.getCredentialWithLink] to obtain the credential.
+  Future<AuthResult> linkWithCredential(AuthCredential credential) async {
+    try {
+      _result = await _user?.linkWithCredential(credential);
+    } catch (ex) {
+      _setError(ex);
+      _result = null;
+    }
+    return _result;
+  }
+
+  /// Initiates email verification for the user.
+  Future<void> sendEmailVerification() async {
+    try {
+      _user?.sendEmailVerification();
+    } catch (ex) {
+      _setError(ex);
+    }
+  }
+
+
+  /// Manually refreshes the data of the current user (for example,
+  /// attached providers, display name, and so on).
+  Future<void> reload() async {
+    try {
+      _user?.reload();
+    } catch (ex) {
+      _setError(ex);
+    }
+  }
+
+
+  /// Deletes the current user (also signs out the user).
+  ///
+  /// Errors:
+  ///   • `ERROR_REQUIRES_RECENT_LOGIN` - If the user's last sign-in time does not meet the security threshold. Use reauthenticate methods to resolve.
+  ///   • `ERROR_INVALID_CREDENTIAL` - If the credential is malformed or has expired.
+  ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
+  ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
+  Future<void> delete() async {
+    try {
+      _user?.delete();
+    } catch (ex) {
+      _setError(ex);
+    }
+  }
+
+    /// Updates the email address of the user.
+  ///
+  /// The original email address recipient will receive an email that allows
+  /// them to revoke the email address change, in order to protect them
+  /// from account hijacking.
+  ///
+  /// **Important**: This is a security sensitive operation that requires
+  /// the user to have recently signed in.
+  ///
+  /// Errors:
+  ///   • `ERROR_INVALID_CREDENTIAL` - If the email address is malformed.
+  ///   • `ERROR_EMAIL_ALREADY_IN_USE` - If the email is already in use by a different account.
+  ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
+  ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
+  ///   • `ERROR_REQUIRES_RECENT_LOGIN` - If the user's last sign-in time does not meet the security threshold. Use reauthenticate methods to resolve.
+  ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Email & Password accounts are not enabled.
+  Future<void> updateEmail(String email) async {
+    try {
+      _user?.updateEmail(email);
+    } catch (ex) {
+      _setError(ex);
+    }
+  }
+
+  /// Updates the phone number of the user.
+  ///
+  /// The new phone number credential corresponding to the phone number
+  /// to be added to the Firebase account, if a phone number is already linked to the account.
+  /// this new phone number will replace it.
+  ///
+  /// **Important**: This is a security sensitive operation that requires
+  /// the user to have recently signed in.
+  ///
+  Future<void> updatePhoneNumberCredential(AuthCredential credential) async {
+    try {
+      _user?.updatePhoneNumberCredential(credential);
+    } catch (ex) {
+      _setError(ex);
+    }
+  }
+
+
+  /// Updates the password of the user.
+  ///
+  /// Anonymous users who update both their email and password will no
+  /// longer be anonymous. They will be able to log in with these credentials.
+  ///
+  /// **Important**: This is a security sensitive operation that requires
+  /// the user to have recently signed in.
+  ///
+  /// Errors:
+  ///   • `ERROR_WEAK_PASSWORD` - If the password is not strong enough.
+  ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
+  ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
+  ///   • `ERROR_REQUIRES_RECENT_LOGIN` - If the user's last sign-in time does not meet the security threshold. Use reauthenticate methods to resolve.
+  ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Email & Password accounts are not enabled.
+  Future<void> updatePassword(String password) async {
+    try {
+      _user?.updatePassword(password);
+    } catch (ex) {
+      _setError(ex);
+    }
+  }
+
+  /// Updates the user profile information.
+  ///
+  /// Errors:
+  ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
+  ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
+  Future<void> updateProfile(UserUpdateInfo userUpdateInfo) async {
+    try {
+      _user?.updateProfile(userUpdateInfo);
+    } catch (ex) {
+      _setError(ex);
+    }
+  }
+
+  /// Renews the user’s authentication tokens by validating a fresh set of
+  /// [credential]s supplied by the user and returns additional identity provider
+  /// data.
+  ///
+  /// This is used to prevent or resolve `ERROR_REQUIRES_RECENT_LOGIN`
+  /// response to operations that require a recent sign-in.
+  ///
+  /// If the user associated with the supplied credential is different from the
+  /// current user, or if the validation of the supplied credentials fails; an
+  /// error is returned and the current user remains signed in.
+  ///
+  /// Errors:
+  ///   • `ERROR_INVALID_CREDENTIAL` - If the [authToken] or [authTokenSecret] is malformed or has expired.
+  ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
+  ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
+  ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Email & Password accounts are not enabled.
+  Future<AuthResult> reauthenticateWithCredential(AuthCredential credential) async {
+    try {
+      _result = await _user?.reauthenticateWithCredential(credential);
+    } catch (ex) {
+      _setError(ex);
+      _result = null;
+    }
+    return _result;
+  }
+
+  /// Detaches the [provider] account from the current user.
+  ///
+  /// This will prevent the user from signing in to this account with those
+  /// credentials.
+  ///
+  /// **Important**: This is a security sensitive operation that requires
+  /// the user to have recently signed in.
+  ///
+  /// Use the `providerId` method of an auth provider for [provider].
+  ///
+  /// Errors:
+  ///   • `ERROR_NO_SUCH_PROVIDER` - If the user does not have a Github Account linked to their account.
+  ///   • `ERROR_REQUIRES_RECENT_LOGIN` - If the user's last sign-in time does not meet the security threshold. Use reauthenticate methods to resolve.
+  Future<void> unlinkFromProvider(String provider) async {
+    try {
+      _user?.unlinkFromProvider(provider);
+    } catch (ex) {
+      _setError(ex);
+    }
+  }
+
+    /// Log into Firebase using Google
   Future<bool> signInGoogle({
     Null listen(GoogleSignInAccount user),
   }) async {
@@ -452,7 +756,22 @@ class Auth {
     return logIn;
   }
 
-  /// Sign into Google
+  /// Attempts to sign in a previously authenticated user without interaction.
+  ///
+  /// Returned Future resolves to an instance of [GoogleSignInAccount] for a
+  /// successful sign in or `null` if there is no previously authenticated user.
+  /// Use [signIn] method to trigger interactive sign in process.
+  ///
+  /// Authentication process is triggered only if there is no currently signed in
+  /// user (that is when `currentUser == null`), otherwise this method returns
+  /// a Future which resolves to the same user instance.
+  ///
+  /// Re-authentication can be triggered only after [signOut] or [disconnect].
+  ///
+  /// When [suppressErrors] is set to `false` and an error occurred during sign in
+  /// returned Future completes with [PlatformException] whose `code` can be
+  /// either [kSignInRequiredError] (when there is no authenticated user) or
+  /// [kSignInFailedError] (when an unknown error occurred).
   Future<bool> signInSilently({
     Null listen(GoogleSignInAccount user),
     bool suppressErrors = true,
@@ -596,12 +915,18 @@ class Auth {
     return signInWithCredential(credential: credential);
   }
 
+  /// Disconnects the current user from the app and revokes previous
+  /// authentication.
   Future<GoogleSignInAccount> disconnect() async {
     await signOut();
     // Disconnect from Google
     return _googleSignIn?.disconnect();
   }
 
+  /// Signs out the current user and clears it from the disk cache.
+  ///
+  /// If successful, it signs the user out of the app and updates
+  /// the [onAuthStateChanged] stream.
   Future<void> signOut() async {
     // Sign out with FireBase
     await _fireBaseAuth?.signOut();
@@ -624,6 +949,7 @@ class Auth {
     return loggedIn;
   }
 
+  /// Returns the currently signed-in [FirebaseUser] or [null] if there is none.
   Future<FirebaseUser> currentUser() async {
     FirebaseUser user;
     try {
