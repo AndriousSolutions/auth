@@ -1,6 +1,7 @@
 ## 3.2.1
 - if (_fireBaseListeners == null) return;
 - Update pubspec.yaml dependencies
+- Update README.md
 
 ## 3.2.0
 - Provided new functions:
