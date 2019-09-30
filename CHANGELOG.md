@@ -1,3 +1,7 @@
+## 3.2.1
+- if (_fireBaseListeners == null) return;
+- Update pubspec.yaml dependencies
+
 ## 3.2.0
 - Provided new functions:
 getIdToken();              updatePhoneNumberCredential(); 

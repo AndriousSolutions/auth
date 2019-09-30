@@ -152,6 +152,7 @@ class Auth {
   bool _firebaseRunning = false;
 
   void _listFireBaseListeners(FirebaseUser user) async {
+
     if (_firebaseRunning) return;
     _firebaseRunning = true;
     await _setUserFromFireBase(user);
@@ -265,7 +266,6 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
-
   /// Tries to create a new user account with the given email address and password.
   ///
   /// If successful, it also signs the user in into the app and updates
@@ -302,7 +302,6 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
-
   /// Returns a list of sign-in methods that can be used to sign in a given
   /// user (identified by its main email address).
   ///
@@ -325,7 +324,6 @@ class Auth {
     }
     return providers;
   }
-
 
   /// Triggers the Firebase Authentication backend to send a password-reset
   /// email to the given email address, which must correspond to an existing
@@ -394,7 +392,6 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
-
   /// Asynchronously signs in to Firebase with the given 3rd-party credentials
   /// (e.g. a Facebook login Access Token, a Google ID Token/Access Token pair,
   /// etc.) and returns additional identity provider data.
@@ -448,7 +445,7 @@ class Auth {
   /// Tries to sign in a user with a given Custom Token [token].
   ///
   /// A listener can also be provided.
-  /// 
+  ///
   /// If successful, it also signs the user in into the app and updates
   /// the [onAuthStateChanged] stream.
   ///
@@ -591,7 +588,6 @@ class Auth {
     }
   }
 
-
   /// Manually refreshes the data of the current user (for example,
   /// attached providers, display name, and so on).
   Future<void> reload() async {
@@ -601,7 +597,6 @@ class Auth {
       _setError(ex);
     }
   }
-
 
   /// Deletes the current user (also signs out the user).
   ///
@@ -618,7 +613,7 @@ class Auth {
     }
   }
 
-    /// Updates the email address of the user.
+  /// Updates the email address of the user.
   ///
   /// The original email address recipient will receive an email that allows
   /// them to revoke the email address change, in order to protect them
@@ -658,7 +653,6 @@ class Auth {
       _setError(ex);
     }
   }
-
 
   /// Updates the password of the user.
   ///
@@ -711,7 +705,8 @@ class Auth {
   ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
   ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
   ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Email & Password accounts are not enabled.
-  Future<AuthResult> reauthenticateWithCredential(AuthCredential credential) async {
+  Future<AuthResult> reauthenticateWithCredential(
+      AuthCredential credential) async {
     try {
       _result = await _user?.reauthenticateWithCredential(credential);
     } catch (ex) {
@@ -742,7 +737,7 @@ class Auth {
     }
   }
 
-    /// Log into Firebase using Google
+  /// Log into Firebase using Google
   Future<bool> signInGoogle({
     Null listen(GoogleSignInAccount user),
   }) async {
@@ -988,6 +983,8 @@ class Auth {
   @deprecated
   Exception get ex => _ex;
   String get message => _ex?.toString() ?? "";
+
+  bool get inError => _ex != null;
 
   /// Get the last error but clear it.
   Exception getError() {
