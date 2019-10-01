@@ -1,3 +1,10 @@
+## 4.0.0
+ October 01, 2019
+- user = await currentUser();
+- plugin flutter_twitter
+- plugin flutter_facebook_login
+- delete folder src\oauth
+        
 ## 3.2.0
 - Provided new functions:
 getIdToken();              updatePhoneNumberCredential(); 
