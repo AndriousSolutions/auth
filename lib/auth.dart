@@ -828,14 +828,15 @@ class Auth {
   }
 
   Future<bool> _setFireBaseUserFromGoogle(
-      GoogleSignInAccount currentUser) async {
-    final GoogleSignInAuthentication auth = await currentUser?.authentication;
+      GoogleSignInAccount googleUser) async {
+    final GoogleSignInAuthentication auth = await googleUser?.authentication;
 
     FirebaseUser user;
     AuthResult result;
 
     if (auth == null) {
-      user = null;
+      // May already be logged into Firebaase
+      user = await currentUser();
     } else {
       try {
         final AuthCredential credential = GoogleAuthProvider.getCredential(

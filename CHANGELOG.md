@@ -1,3 +1,7 @@
+## 3.2.2
+ October 01, 2019
+- user = await currentUser();
+
 ## 3.2.1
 - if (_fireBaseListeners == null) return;
 - Update pubspec.yaml dependencies
