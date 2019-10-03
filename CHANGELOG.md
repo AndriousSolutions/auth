@@ -1,12 +1,29 @@
-## 3.2.2
+## 4.0.0
+ October 02, 2019
+- removed signIn()
+- new signInSilently()
+- new signInWithGoogleSilently()
+- new signInWithFacebook()
+- new signInWithFacebookSilently()
+- new signInFacebook()
+- new signInWithTwitter()
+- new signInWithTwitterSilently()
+- new signInTwitter()
+- new addListen(f) 
+- deprecated googleListener(f)
+- new addListener(f) 
+- deprecated fireBaseListener(f)
+- createUserWithEmailAndPassword() allowed if logged in
+- addListener(f) in signInAnonymously()
+- addListener(f) in signInWithCredential()
+- addListener(f) in signInWithCustomToken()
+- addListener(f) in signInWithEmailAndPassword()
  October 01, 2019
 - user = await currentUser();
-
-## 3.2.1
-- if (_fireBaseListeners == null) return;
-- Update pubspec.yaml dependencies
-- Update README.md
-
+- plugin flutter_twitter
+- plugin flutter_facebook_login
+- delete folder src\oauth
+        
 ## 3.2.0
 - Provided new functions:
 getIdToken();              updatePhoneNumberCredential(); 
