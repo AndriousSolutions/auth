@@ -78,8 +78,8 @@ class SignInDemoState extends State<SignInDemo>
           title: const Text("Sign In Demo"),
           bottom: TabBar(
             tabs: [
-              Tab(text: "Sign In"),
-              Tab(text: "Results"),
+              const Tab(text: "Sign In"),
+              const Tab(text: "Results"),
             ],
             controller: tabController,
           ),
@@ -109,8 +109,8 @@ class SignInDemoState extends State<SignInDemo>
           ListTile(
             leading: auth.signedInGoogle()
                 ? GoogleUserCircleAvatar(
-              identity: auth.googleUser,
-            )
+                    identity: auth.googleUser,
+                  )
                 : Text(''),
             title: Text(auth.displayName),
             subtitle: Text(auth.email),
@@ -132,8 +132,7 @@ class SignInDemoState extends State<SignInDemo>
           RaisedButton(
             child: const Text('Just Quit'),
             onPressed: () {
-              SystemChannels.platform
-                  .invokeMethod('SystemNavigator.pop');
+              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
             },
           ),
         ],
@@ -168,9 +167,9 @@ class SignInDemoState extends State<SignInDemo>
             onPressed: () {
               auth
                   .signInWithTwitter(
-                  key: "ab1cefgh23KlmnOpQ4STUVWx5",
-                  secret:
-                  "ab1cefgh23KlmnOpQ4STUVWx5y6ZabCDe7ghi8jKLMnOP9qRst")
+                      key: "ab1cefgh23KlmnOpQ4STUVWx5",
+                      secret:
+                          "ab1cefgh23KlmnOpQ4STUVWx5y6ZabCDe7ghi8jKLMnOP9qRst")
                   .then(signInFunc)
                   .catchError((err) {
                 if (err is! Exception) err = err.toString();
@@ -216,36 +215,36 @@ class SignInDemoState extends State<SignInDemo>
   }
 
   Widget get _authResults => ListView(
-    padding: const EdgeInsets.all(30.0),
-    itemExtent: 80.0,
-    children: <Widget>[
-      Text("uid: ${auth.uid}"),
-      Text("name: ${auth.displayName}"),
-      Text("photo: ${auth.photoUrl}"),
-      Text("new login: ${auth.isNewUser}"),
-      Text("user name: ${auth.username}"),
-      Text("email: ${auth.email}"),
-      Text("email verified: ${auth.isEmailVerified}"),
-      Text("anonymous login: ${auth.isAnonymous}"),
-      Text("permissions: ${auth.permissions}"),
-      Text("id token: ${auth.idToken}"),
-      Text("access token: ${auth.accessToken}"),
-      Text("information provider: ${auth.providerId}"),
-      Text("expire time: ${auth.expirationTime}"),
-      Text("auth time: ${auth.authTime}"),
-      Text("issued at: ${auth.issuedAtTime}"),
-      Text("signin provider: ${auth.signInProvider}"),
-    ],
-  );
+        padding: const EdgeInsets.all(30.0),
+        itemExtent: 80.0,
+        children: <Widget>[
+          Text("uid: ${auth.uid}"),
+          Text("name: ${auth.displayName}"),
+          Text("photo: ${auth.photoUrl}"),
+          Text("new login: ${auth.isNewUser}"),
+          Text("user name: ${auth.username}"),
+          Text("email: ${auth.email}"),
+          Text("email verified: ${auth.isEmailVerified}"),
+          Text("anonymous login: ${auth.isAnonymous}"),
+          Text("permissions: ${auth.permissions}"),
+          Text("id token: ${auth.idToken}"),
+          Text("access token: ${auth.accessToken}"),
+          Text("information provider: ${auth.providerId}"),
+          Text("expire time: ${auth.expirationTime}"),
+          Text("auth time: ${auth.authTime}"),
+          Text("issued at: ${auth.issuedAtTime}"),
+          Text("signin provider: ${auth.signInProvider}"),
+        ],
+      );
 
   Widget get signInErrorMsg => Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: Center(
           child: RichText(
               text: TextSpan(
-                text: errorMessage,
-                style: TextStyle(color: Colors.red),
-              ))));
+        text: errorMessage,
+        style: const TextStyle(color: Colors.red),
+      ))));
 }
 
 // Creates an alertDialog for the user to enter their email
@@ -293,19 +292,19 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
             autovalidate: _resetValidate,
             child: ListBody(
               children: <Widget>[
-                Text(
+                const Text(
                   "Email Address & Password.",
-                  style: TextStyle(fontSize: 14.0),
+                  style: const TextStyle(fontSize: 14.0),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
                 ),
                 Column(
                   children: <Widget>[
                     Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Icon(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: const Icon(
                           Icons.email,
                           size: 20.0,
                         ),
@@ -321,10 +320,10 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
                               border: InputBorder.none,
                               hintText: 'Email',
                               contentPadding:
-                              EdgeInsets.only(left: 70.0, top: 15.0),
-                              hintStyle: TextStyle(
+                              const EdgeInsets.only(left: 70.0, top: 15.0),
+                              hintStyle: const TextStyle(
                                   color: Colors.black, fontSize: 14.0)),
-                          style: TextStyle(color: Colors.black),
+                          style: const TextStyle(color: Colors.black),
                         ),
                       )
                     ]),
@@ -339,7 +338,7 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
                         keyboardType: TextInputType.text,
                         controller: _passwordController,
                         obscureText:
-                        _hidePassword, //This will obscure text dynamically
+                            _hidePassword, //This will obscure text dynamically
                         decoration: InputDecoration(
                           labelText: 'Password',
                           hintText: 'Enter your password',
@@ -370,18 +369,18 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
         ),
         actions: <Widget>[
           FlatButton(
-            child: Text(
+            child: const Text(
               'CANCEL',
-              style: TextStyle(color: Colors.black),
+              style: const TextStyle(color: Colors.black),
             ),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           FlatButton(
-            child: Text(
+            child: const Text(
               'SEND EMAIL',
-              style: TextStyle(color: Colors.black),
+              style: const TextStyle(color: Colors.black),
             ),
             onPressed: () {
               _onPressed();
