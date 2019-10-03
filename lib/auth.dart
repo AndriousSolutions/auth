@@ -81,8 +81,8 @@ class Auth {
 
   Set<FireBaseListener> _fireBaseListeners = Set();
   bool _firebaseRunning = false;
-  Set<GoogleListener> _googleListeners = Set();
 
+  Set<GoogleListener> _googleListeners = Set();
   bool _googleRunning = false;
 
   List<Exception> _eventErrors = List();
@@ -148,9 +148,7 @@ class Auth {
     String key,
     String secret,
   }) {
-    _initFireBase(
-      listener: listener,
-    );
+    _initFireBase(listener: listener);
 
     if (_googleSignIn == null) {
       _googleSignIn = GoogleSignIn(
@@ -209,22 +207,17 @@ class Auth {
 
   bool get isEmailVerified => _isEmailVerified;
 
-  bool get isNewUser => _result?.additionalUserInfo?.isNewUser ?? false;
-
   DateTime get issuedAtTime => _idTokenResult?.issuedAtTime ?? DateTime.now();
 
-  set listen(GoogleListener f) => _googleListeners.add(f);
+  set listen(GoogleListener f) => addListen(f);
 
-  set listener(FireBaseListener f) => _fireBaseListeners.add(f);
+  set listener(FireBaseListener f) => addListener(f);
 
   String get message => _ex?.toString() ?? "";
 
   String get phoneNumber => _phoneNumber;
 
   String get photoUrl => _photoUrl;
-
-  String get providerId =>
-      _result?.additionalUserInfo?.providerId ?? user?.providerId ?? "";
 
   AuthResult get result => _result;
 
@@ -237,6 +230,11 @@ class Auth {
   AdditionalUserInfo get userInfo => _result?.additionalUserInfo;
 
   String get username => _result?.additionalUserInfo?.username ?? "";
+
+  bool get isNewUser => _result?.additionalUserInfo?.isNewUser ?? false;
+
+  String get providerId =>
+      _result?.additionalUserInfo?.providerId ?? user?.providerId ?? "";
 
   Future<bool> alreadyLoggedIn([GoogleSignInAccount googleUser]) async {
     FirebaseUser fireBaseUser;
@@ -262,8 +260,8 @@ class Auth {
     @required String password,
     void listener(FirebaseUser user),
   }) async {
-    final loggedIn = await alreadyLoggedIn();
-    if (loggedIn) return loggedIn;
+//    final loggedIn = await alreadyLoggedIn();
+//    if (loggedIn) return loggedIn;
 
     _initFireBase(listener: listener);
 
@@ -313,19 +311,18 @@ class Auth {
 
   /// Disconnects the current user from the app and revokes previous
   /// authentication.
-  Future<GoogleSignInAccount> disconnect() async {
+  Future<void> disconnect() async {
     await signOut();
-
     // Disconnect from Facebook
     _facebookLogin?.logOut();
     // Disconnect from Twitter
     _twitterLogin?.logOut();
-    
     // Disconnect from Google
-    return _googleSignIn?.disconnect();
+    if (_googleSignIn?.currentUser != null) _googleSignIn?.disconnect();
   }
 
   /// Important to call this function when terminating the you app.
+  // However, doesn't not seem to be called?
   void dispose() async {
     await signOut();
     _user = null;
@@ -337,6 +334,8 @@ class Auth {
     await _firebaseListener?.cancel();
     _googleListener = null;
     _firebaseListener = null;
+    _facebookLogin = null;
+    _twitterLogin = null;
   }
 
   /// Returns a list of sign-in methods that can be used to sign in a given
@@ -361,8 +360,6 @@ class Auth {
     }
     return providers;
   }
-
-  void fireBaseListener(FireBaseListener f) => _fireBaseListeners.add(f);
 
   /// Get the last error but clear it.
   Exception getError() {
@@ -395,7 +392,25 @@ class Auth {
     return result;
   }
 
-  void googleListener(GoogleListener f) => _googleListeners.add(f);
+  @deprecated
+  bool fireBaseListener(FireBaseListener f) => addListener(f);
+
+  /// Add a Firebase Listener
+  bool addListener(FireBaseListener f) {
+    bool add = f != null;
+    if (add) add = _fireBaseListeners.add(f);
+    return add;
+  }
+
+  @deprecated
+  bool googleListener(GoogleListener f) => addListen(f);
+
+  /// Add a Google listener
+  bool addListen(GoogleListener f) {
+    bool add = f != null;
+    if (add) add = _googleListeners.add(f);
+    return add;
+  }
 
   /// FireBase Logged in.
   Future<bool> isLoggedIn() async {
@@ -410,6 +425,12 @@ class Auth {
   /// Google Signed in.
   Future<bool> isSignedIn() async =>
       await isLoggedIn() && _googleSignIn?.currentUser != null;
+
+  /// True if signed into Firebase
+  bool signedInFirebase() => !signedInGoogle();
+
+  /// True if signed into a Google account
+  bool signedInGoogle() => googleUser != null;
 
   /// Associates a user account from a third-party identity provider with this
   /// user and returns additional identity provider data.
@@ -522,38 +543,6 @@ class Auth {
     }
   }
 
-  /// True if signed into Firebase
-  bool signedInFirebase() => !signedInGoogle();
-
-  /// True if signed into a Google account
-  bool signedInGoogle() => googleUser != null;
-
-  /// Force the user to interactively sign in
-  Future<bool> signIn({
-    Null listen(GoogleSignInAccount event),
-  }) async {
-    _initListen(listen: listen);
-
-    // Attempt to get the currently authenticated user
-    GoogleSignInAccount currentUser = _googleSignIn.currentUser;
-
-    if (currentUser == null) {
-      try {
-        // Force the user to interactively sign in
-        currentUser = await _googleSignIn.signIn();
-      } catch (ex) {
-        _setError(ex);
-        if (ex.toString().indexOf('INTERNAL') > 0) {
-          // Simply run it again to make it work.
-          return signIn();
-        } else {
-          currentUser = null;
-        }
-      }
-    }
-    return await _setFireBaseUserFromGoogle(currentUser);
-  }
-
   /// Asynchronously creates and becomes an anonymous user.
   ///
   /// If there is already an anonymous user signed in, that user will be
@@ -568,6 +557,9 @@ class Auth {
   Future<bool> signInAnonymously({
     void listener(FirebaseUser user),
   }) async {
+    // Logged in but add the listener anyway.
+    addListener(listener);
+
     final loggedIn = await alreadyLoggedIn();
     if (loggedIn) return loggedIn;
 
@@ -586,17 +578,43 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
-  /// Log into Firebase using Google
-  Future<bool> signInGoogle({
-    Null listen(GoogleSignInAccount user),
+  /// Attempt to sign in with one of the 'online' accounts:
+  /// Google, Facebook and Twitter.
+  Future<bool> signInSilently({
+    String key,
+    String secret,
+    void listener(FirebaseUser user),
+    void listen(GoogleSignInAccount user),
+    bool suppressErrors = true,
   }) async {
-    /// Attempt to sign in without user interaction
-    bool logIn = await signInSilently(listen: listen, suppressErrors: true);
+    bool logIn = await alreadyLoggedIn();
+
+    // Logged in but add the listener anyway.
+    if (logIn) addListener(listener);
 
     if (!logIn) {
-      /// Force the user to interactively sign in
-      logIn = await signIn(listen: listen);
+      /// Attempt to sign in with Google without user interaction
+      logIn =
+          await signInWithGoogleSilently(listen: listen, suppressErrors: true);
     }
+
+    if (!logIn) {
+      /// Attempt to sign in with Facebook without user interaction
+      logIn = await signInWithFacebookSilently(
+        permissions: permissions,
+        listener: listener,
+      );
+    }
+
+    if (!logIn) {
+      /// Attempt to sign in with Twitter without user interaction
+      logIn = await signInWithTwitterSilently(
+        key: key,
+        secret: secret,
+        listener: listener,
+      );
+    }
+
     return logIn;
   }
 
@@ -604,7 +622,7 @@ class Auth {
   ///
   /// Returned Future resolves to an instance of [GoogleSignInAccount] for a
   /// successful sign in or `null` if there is no previously authenticated user.
-  /// Use [signIn] method to trigger interactive sign in process.
+  /// Use [signInWithGoogle] method to trigger interactive sign in process.
   ///
   /// Authentication process is triggered only if there is no currently signed in
   /// user (that is when `currentUser == null`), otherwise this method returns
@@ -616,8 +634,8 @@ class Auth {
   /// returned Future completes with [PlatformException] whose `code` can be
   /// either [kSignInRequiredError] (when there is no authenticated user) or
   /// [kSignInFailedError] (when an unknown error occurred).
-  Future<bool> signInSilently({
-    Null listen(GoogleSignInAccount user),
+  Future<bool> signInWithGoogleSilently({
+    void listen(GoogleSignInAccount user),
     bool suppressErrors = true,
   }) async {
     _initListen(listen: listen);
@@ -641,13 +659,54 @@ class Auth {
         _setError(ex);
         if (ex.toString().indexOf('INTERNAL') > 0) {
           // Simply run it again to make it work.
-          return signInSilently();
+          return signInWithGoogleSilently();
         } else {
           currentUser = null;
         }
       }
     }
     return await _setFireBaseUserFromGoogle(currentUser);
+  }
+
+  /// Force the user to interactively sign in
+  Future<bool> signInWithGoogle({
+    void listen(GoogleSignInAccount event),
+  }) async {
+    _initListen(listen: listen);
+
+    // Attempt to get the currently authenticated user
+    GoogleSignInAccount currentUser = _googleSignIn.currentUser;
+
+    if (currentUser == null) {
+      try {
+        // Force the user to interactively sign in
+        currentUser = await _googleSignIn.signIn();
+      } catch (ex) {
+        _setError(ex);
+        if (ex.toString().indexOf('INTERNAL') > 0) {
+          // Simply run it again to make it work.
+          return signInWithGoogle();
+        } else {
+          currentUser = null;
+        }
+      }
+    }
+    return await _setFireBaseUserFromGoogle(currentUser);
+  }
+
+  /// Log into Firebase using Google
+  Future<bool> signInGoogle({
+    void listen(GoogleSignInAccount user),
+  }) async {
+    /// Attempt to sign in without user interaction
+    bool logIn =
+        await signInWithGoogleSilently(listen: listen, suppressErrors: true);
+
+    if (!logIn) {
+      /// Force the user to interactively sign in
+      logIn = await signInWithGoogle(listen: listen);
+    }
+    return logIn;
   }
 
   /// Asynchronously signs in to Firebase with the given 3rd-party credentials
@@ -675,6 +734,9 @@ class Auth {
     @required AuthCredential credential,
     void listener(FirebaseUser user),
   }) async {
+    // Logged in but add the listener anyway.
+    addListener(listener);
+
     final loggedIn = await alreadyLoggedIn();
     if (loggedIn) return loggedIn;
 
@@ -724,6 +786,9 @@ class Auth {
     @required String token,
     void listener(FirebaseUser user),
   }) async {
+    // Logged in but add the listener anyway.
+    addListener(listener);
+
     final loggedIn = await alreadyLoggedIn();
     if (loggedIn) return loggedIn;
 
@@ -765,12 +830,15 @@ class Auth {
   ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
   ///   • `ERROR_TOO_MANY_REQUESTS` - If there was too many attempts to sign in as this user.
   ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Email & Password accounts are not enabled.
-  ///   
+  ///
   Future<bool> signInWithEmailAndPassword({
     @required String email,
     @required String password,
     void listener(FirebaseUser user),
   }) async {
+    // Logged in but add the listener anyway.
+    addListener(listener);
+
     final loggedIn = await alreadyLoggedIn();
     if (loggedIn) return loggedIn;
 
@@ -797,35 +865,73 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
+  /// Silently Sign into Firebase with Facebook
+  Future<bool> signInWithFacebookSilently({
+    List<String> permissions,
+    void listener(FirebaseUser user),
+  }) =>
+      signInWithFacebook(
+        permissions: permissions,
+        listener: listener,
+        silently: true,
+      );
+
+  /// Sign into Firebase by logging into Facebook
   ///
   /// https://pub.dev/packages/flutter_facebook_login
   ///
-  Future<bool> signInWithFacebook([List<String> permissions]) async {
-    _facebookLogin ??= FacebookLogin();
+  Future<bool> signInWithFacebook({
+    List<String> permissions,
+    void listener(FirebaseUser user),
+    bool silently = false,
+  }) async {
+    try {
+      _facebookLogin ??= FacebookLogin();
+    } catch (ex) {
+      _setError(ex);
+    }
+
+    if (_facebookLogin == null) return false;
 
     String token;
+    bool loggedIn;
+    FacebookAccessToken access;
 
-    bool loggedIn = await _facebookLogin.isLoggedIn;
+    try {
+      loggedIn = await _facebookLogin.isLoggedIn;
+    } catch (ex) {
+      loggedIn = false;
+      _setError(ex);
+    }
 
-    if (loggedIn) {
-      FacebookAccessToken access = await _facebookLogin.currentAccessToken;
-      token = access.token;
+    if (loggedIn || silently) {
+      try {
+        access = await _facebookLogin.currentAccessToken;
+      } catch (ex) {
+        _setError(ex);
+      }
+      token = access?.token ?? "";
     } else {
       permissions ??= _permissions;
       if (permissions.isEmpty) permissions = ['email'];
-      final FacebookLoginResult result =
-          await _facebookLogin.logIn(permissions);
-      switch (result.status) {
-        case FacebookLoginStatus.loggedIn:
-          token = result.accessToken.token;
-          break;
-        case FacebookLoginStatus.cancelledByUser:
-          token = "";
-          break;
-        case FacebookLoginStatus.error:
-          token = "";
-          _setError(Exception(result.errorMessage));
-          break;
+      FacebookLoginResult result;
+      try {
+        result = await _facebookLogin.logIn(permissions);
+        switch (result.status) {
+          case FacebookLoginStatus.loggedIn:
+            token = result?.accessToken?.token ?? "";
+            break;
+          case FacebookLoginStatus.cancelledByUser:
+            token = "";
+            break;
+          case FacebookLoginStatus.error:
+            token = "";
+            _setError(Exception(result.errorMessage));
+            break;
+        }
+      } catch (ex) {
+        token = "";
+        _setError(ex);
       }
     }
 
@@ -835,66 +941,161 @@ class Auth {
       _accessToken = token;
       final AuthCredential credential =
           FacebookAuthProvider.getCredential(accessToken: token);
-      signIn = await signInWithCredential(credential: credential);
+      signIn = await signInWithCredential(
+          credential: credential, listener: listener);
     }
     return signIn;
   }
 
+  /// SignIn using Facebook.
+  Future<bool> signInFacebook({
+    List<String> permissions,
+    void listener(FirebaseUser user),
+  }) async {
+    /// Attempt to sign in without user interaction
+    bool logIn = await signInWithFacebookSilently(
+      permissions: permissions,
+      listener: listener,
+    );
+
+    if (!logIn) {
+      /// Force the user to interactively sign in
+      logIn = await signInWithFacebook(
+        permissions: permissions,
+        listener: listener,
+      );
+    }
+    return logIn;
+  }
+
+  /// Silently Sign into Firebase with Twitter
+  Future<bool> signInWithTwitterSilently({
+    String key,
+    String secret,
+    void listener(FirebaseUser user),
+  }) =>
+      signInWithTwitter(
+        key: key,
+        secret: secret,
+        listener: listener,
+        silently: true,
+        suppressAsserts: true,
+      );
+
+  /// Sign into Firebase by logging into Facebook
   ///
   ///  https://pub.dev/packages/flutter_twitter
-  ///  
-  Future<bool> signInWithTwitter({String key, String secret, void listener(FirebaseUser user),}) async {
+  ///
+  Future<bool> signInWithTwitter({
+    String key,
+    String secret,
+    void listener(FirebaseUser user),
+    bool silently = false,
+    bool suppressAsserts = false,
+  }) async {
     key ??= _key ?? "";
     secret ??= _secret ?? "";
 
-    assert(key.isNotEmpty, "Must pass an key to signInWithTwitter() function!");
-    assert(secret.isNotEmpty,
-        "Must pass the secret to signInWithTwitter() function!");
+    if (!suppressAsserts) {
+      assert(
+          key.isNotEmpty, "Must pass an key to signInWithTwitter() function!");
+      assert(secret.isNotEmpty,
+          "Must pass the secret to signInWithTwitter() function!");
+    }
 
-    if (key.isEmpty || secret.isEmpty) return Future.value(false);
+    if (key.isEmpty || secret.isEmpty) return false;
 
     String token;
     String tokenSecret = "";
     bool signIn = false;
     bool inSession;
 
-    if(_twitterLogin != null){
-      inSession = await _twitterLogin.isSessionActive;
+    // Disconnect from Twitter first if logged in.
+    await _twitterLogin?.logOut();
+    _twitterLogin = null;
 
+    try {
+      _twitterLogin = TwitterLogin(consumerKey: key, consumerSecret: secret);
+    } catch (ex) {
+      _setError(ex);
     }
 
-    _twitterLogin = TwitterLogin(consumerKey: key, consumerSecret: secret);
+    if (_twitterLogin == null) return false;
 
-    inSession = await _twitterLogin.isSessionActive;
+    try {
+      inSession = await _twitterLogin.isSessionActive;
+    } catch (ex) {
+      inSession = false;
+      _setError(ex);
+    }
 
-    if (inSession) {
-      final TwitterSession session = await _twitterLogin.currentSession;
-      token = session.token;
-      tokenSecret = session.secret;
+    /// Don't bother logging in if the session is already active.
+    if (inSession || silently) {
+      TwitterSession session;
+      try {
+        session = await _twitterLogin.currentSession;
+      } catch (ex) {
+        session = null;
+        _setError(ex);
+      }
+      token = session?.token ?? "";
+      tokenSecret = session?.secret ?? "";
     } else {
-      final TwitterLoginResult result = await _twitterLogin.authorize();
-      switch (result.status) {
-        case TwitterLoginStatus.loggedIn:
-          token = result.session.token;
-          tokenSecret = result.session.secret;
-          break;
-        case TwitterLoginStatus.cancelledByUser:
-          token = "";
-          break;
-        case TwitterLoginStatus.error:
-          token = "";
-          _setError(Exception(result.errorMessage));
-          break;
+      TwitterLoginResult result;
+      try {
+        result = await _twitterLogin.authorize();
+        switch (result.status) {
+          case TwitterLoginStatus.loggedIn:
+            token = result.session.token;
+            tokenSecret = result.session.secret;
+            break;
+          case TwitterLoginStatus.cancelledByUser:
+            token = "";
+            break;
+          case TwitterLoginStatus.error:
+            token = "";
+            _setError(Exception(result.errorMessage));
+            break;
+        }
+      } catch (ex) {
+        token = "";
+        _setError(ex);
       }
     }
 
+    /// Sign into Firebase
     if (token.isNotEmpty) {
       _accessToken = token;
       AuthCredential credential = TwitterAuthProvider.getCredential(
           authToken: token, authTokenSecret: tokenSecret);
-      signIn = await signInWithCredential(credential: credential, listener: listener);
+      signIn = await signInWithCredential(
+          credential: credential, listener: listener);
     }
     return signIn;
+  }
+
+  /// SignIn using Twitter.
+  Future<bool> signInTwitter({
+    String key,
+    String secret,
+    void listener(FirebaseUser user),
+  }) async {
+    /// Attempt to sign in without user interaction
+    bool logIn = await signInWithTwitterSilently(
+      key: key,
+      secret: secret,
+      listener: listener,
+    );
+
+    if (!logIn) {
+      /// Force the user to interactively sign in
+      logIn = await signInWithTwitter(
+        key: key,
+        secret: secret,
+        listener: listener,
+      );
+    }
+    return logIn;
   }
 
   /// Signs out the current user and clears it from the disk cache.
@@ -1033,9 +1234,7 @@ class Auth {
       _fbAuth = _fireBaseAuth;
     }
 
-    if (listener != null) {
-      _fireBaseListeners.add(listener);
-    }
+    addListener(listener);
   }
 
   void _initListen({
@@ -1132,9 +1331,6 @@ class Auth {
     _idToken = _idTokenResult?.token ?? "";
 
     _accessToken = "";
-
-//    return user?.uid?.isNotEmpty ?? false;
-//  }
 
     _isEmailVerified = user?.isEmailVerified ?? false;
 

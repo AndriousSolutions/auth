@@ -4,9 +4,11 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:flutter/services.dart' show SystemChannels, TextInputType;
+
 import 'package:google_sign_in/google_sign_in.dart' show GoogleUserCircleAvatar;
 
-import 'package:auth/auth.dart';
+import 'package:auth/auth.dart' show Auth;
 
 void main() {
   runApp(
@@ -27,6 +29,7 @@ class SignInDemoState extends State<SignInDemo>
   Auth auth;
   bool loggedIn = false;
   TabController tabController;
+  String errorMessage = "";
 
   @override
   void initState() {
@@ -41,15 +44,24 @@ class SignInDemoState extends State<SignInDemo>
         ],
         listener: (user) {
           loggedIn = user != null;
+          errorMessage = auth.message;
           setState(() {});
         });
 
     auth.signInSilently(
       listen: (account) {
         loggedIn = account != null;
+        errorMessage = auth.message;
         setState(() {});
       },
+      listener: (user) {
+        final test = user != null;
+      },
     );
+
+    auth.isLoggedIn().then((isIn) {
+      loggedIn = isIn;
+    });
   }
 
   @override
@@ -97,15 +109,16 @@ class SignInDemoState extends State<SignInDemo>
           ListTile(
             leading: auth.signedInGoogle()
                 ? GoogleUserCircleAvatar(
-                    identity: auth.googleUser,
-                  )
+              identity: auth.googleUser,
+            )
                 : Text(''),
             title: Text(auth.displayName),
             subtitle: Text(auth.email),
           ),
           const Text("Signed in successfully."),
+          signInErrorMsg,
           RaisedButton(
-            child: const Text('Sign Out'),
+            child: const Text('Sign Out of Firebase'),
             onPressed: () {
               auth.signOut();
             },
@@ -116,23 +129,71 @@ class SignInDemoState extends State<SignInDemo>
               auth.disconnect();
             },
           ),
+          RaisedButton(
+            child: const Text('Just Quit'),
+            onPressed: () {
+              SystemChannels.platform
+                  .invokeMethod('SystemNavigator.pop');
+            },
+          ),
         ],
       );
     } else {
+      // This function is called by every RaisedButton widget.
+      Function signInFunc = (signIn) {
+        if (signIn) {
+          errorMessage = "";
+        } else {
+          errorMessage = auth.message;
+        }
+        setState(() {});
+      };
+
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           const Text("You are not currently signed in."),
+          signInErrorMsg,
+          RaisedButton(
+            child: const Text('Sign In With Facebook'),
+            onPressed: () {
+              auth.signInWithFacebook().then(signInFunc).catchError((err) {
+                if (err is! Exception) err = err.toString();
+                errorMessage = auth.message;
+              });
+            },
+          ),
+          RaisedButton(
+            child: const Text('Sign In With Twitter'),
+            onPressed: () {
+              auth
+                  .signInWithTwitter(
+                  key: "ab1cefgh23KlmnOpQ4STUVWx5",
+                  secret:
+                  "ab1cefgh23KlmnOpQ4STUVWx5y6ZabCDe7ghi8jKLMnOP9qRst")
+                  .then(signInFunc)
+                  .catchError((err) {
+                if (err is! Exception) err = err.toString();
+                errorMessage = auth.message;
+              });
+            },
+          ),
           RaisedButton(
             child: const Text('Sign In With Google'),
             onPressed: () {
-              auth.signIn();
+              auth.signInWithGoogle().then(signInFunc).catchError((err) {
+                if (err is! Exception) err = err.toString();
+                errorMessage = auth.message;
+              });
             },
           ),
           RaisedButton(
             child: const Text('Log in anonymously'),
             onPressed: () {
-              auth.signInAnonymously();
+              auth.signInAnonymously().then(signInFunc).catchError((err) {
+                if (err is! Exception) err = err.toString();
+                errorMessage = auth.message;
+              });
             },
           ),
           RaisedButton(
@@ -140,7 +201,13 @@ class SignInDemoState extends State<SignInDemo>
             onPressed: () async {
               List<String> ep = await dialogBox(context: context);
               if (ep == null || ep.isEmpty) return;
-              auth.signInWithEmailAndPassword(email: ep[0], password: ep[1]);
+              auth
+                  .signInWithEmailAndPassword(email: ep[0], password: ep[1])
+                  .then(signInFunc)
+                  .catchError((err) {
+                if (err is! Exception) err = err.toString();
+                errorMessage = auth.message;
+              });
             },
           ),
         ],
@@ -149,26 +216,36 @@ class SignInDemoState extends State<SignInDemo>
   }
 
   Widget get _authResults => ListView(
-        padding: const EdgeInsets.all(30.0),
-        itemExtent: 80.0,
-        children: <Widget>[
-          Text("uid: ${auth.uid}"),
-          Text("name: ${auth.displayName}"),
-          Text("photo: ${auth.photoUrl}"),
-          Text("new login: ${auth.isNewUser}"),
-          Text("user name: ${auth.username}"),
-          Text("email: ${auth.email}"),
-          Text("email verified: ${auth.isEmailVerified}"),
-          Text("anonymous login: ${auth.isAnonymous}"),
-          Text("id token: ${auth.idToken}"),
-          Text("access token: ${auth.accessToken}"),
-          Text("information provider: ${auth.providerId}"),
-          Text("expire time: ${auth.expirationTime}"),
-          Text("auth time: ${auth.authTime}"),
-          Text("issued at: ${auth.issuedAtTime}"),
-          Text("signin provider: ${auth.signInProvider}"),
-        ],
-      );
+    padding: const EdgeInsets.all(30.0),
+    itemExtent: 80.0,
+    children: <Widget>[
+      Text("uid: ${auth.uid}"),
+      Text("name: ${auth.displayName}"),
+      Text("photo: ${auth.photoUrl}"),
+      Text("new login: ${auth.isNewUser}"),
+      Text("user name: ${auth.username}"),
+      Text("email: ${auth.email}"),
+      Text("email verified: ${auth.isEmailVerified}"),
+      Text("anonymous login: ${auth.isAnonymous}"),
+      Text("permissions: ${auth.permissions}"),
+      Text("id token: ${auth.idToken}"),
+      Text("access token: ${auth.accessToken}"),
+      Text("information provider: ${auth.providerId}"),
+      Text("expire time: ${auth.expirationTime}"),
+      Text("auth time: ${auth.authTime}"),
+      Text("issued at: ${auth.issuedAtTime}"),
+      Text("signin provider: ${auth.signInProvider}"),
+    ],
+  );
+
+  Widget get signInErrorMsg => Container(
+      padding: EdgeInsets.all(10),
+      child: Center(
+          child: RichText(
+              text: TextSpan(
+                text: errorMessage,
+                style: TextStyle(color: Colors.red),
+              ))));
 }
 
 // Creates an alertDialog for the user to enter their email
@@ -244,7 +321,7 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
                               border: InputBorder.none,
                               hintText: 'Email',
                               contentPadding:
-                                  EdgeInsets.only(left: 70.0, top: 15.0),
+                              EdgeInsets.only(left: 70.0, top: 15.0),
                               hintStyle: TextStyle(
                                   color: Colors.black, fontSize: 14.0)),
                           style: TextStyle(color: Colors.black),
@@ -262,7 +339,7 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
                         keyboardType: TextInputType.text,
                         controller: _passwordController,
                         obscureText:
-                            _hidePassword, //This will obscure text dynamically
+                        _hidePassword, //This will obscure text dynamically
                         decoration: InputDecoration(
                           labelText: 'Password',
                           hintText: 'Enter your password',

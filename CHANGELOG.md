@@ -1,4 +1,23 @@
 ## 4.0.0
+ October 02, 2019
+- removed signIn()
+- new signInSilently()
+- new signInWithGoogleSilently()
+- new signInWithFacebook()
+- new signInWithFacebookSilently()
+- new signInFacebook()
+- new signInWithTwitter()
+- new signInWithTwitterSilently()
+- new signInTwitter()
+- new addListen(f) 
+- deprecated googleListener(f)
+- new addListener(f) 
+- deprecated fireBaseListener(f)
+- createUserWithEmailAndPassword() allowed if logged in
+- addListener(f) in signInAnonymously()
+- addListener(f) in signInWithCredential()
+- addListener(f) in signInWithCustomToken()
+- addListener(f) in signInWithEmailAndPassword()
  October 01, 2019
 - user = await currentUser();
 - plugin flutter_twitter
