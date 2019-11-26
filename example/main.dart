@@ -320,7 +320,7 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
                               border: InputBorder.none,
                               hintText: 'Email',
                               contentPadding:
-                              const EdgeInsets.only(left: 70.0, top: 15.0),
+                                  const EdgeInsets.only(left: 70.0, top: 15.0),
                               hintStyle: const TextStyle(
                                   color: Colors.black, fontSize: 14.0)),
                           style: const TextStyle(color: Colors.black),

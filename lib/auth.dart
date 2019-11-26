@@ -41,11 +41,10 @@ import 'package:firebase_auth/firebase_auth.dart'
         UserUpdateInfo;
 
 import 'package:google_sign_in/google_sign_in.dart'
-    show
-        GoogleSignIn,
-        GoogleSignInAccount,
-        GoogleSignInAuthentication,
-        SignInOption;
+    show GoogleSignIn, GoogleSignInAccount, GoogleSignInAuthentication;
+
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
+    show SignInOption;
 
 import 'package:flutter_facebook_login/flutter_facebook_login.dart'
     show
