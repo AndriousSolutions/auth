@@ -41,11 +41,10 @@ import 'package:firebase_auth/firebase_auth.dart'
         UserUpdateInfo;
 
 import 'package:google_sign_in/google_sign_in.dart'
-    show
-        GoogleSignIn,
-        GoogleSignInAccount,
-        GoogleSignInAuthentication,
-        SignInOption;
+    show GoogleSignIn, GoogleSignInAccount, GoogleSignInAuthentication;
+
+import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
+    show SignInOption;
 
 import 'package:flutter_facebook_login/flutter_facebook_login.dart'
     show
@@ -54,7 +53,10 @@ import 'package:flutter_facebook_login/flutter_facebook_login.dart'
         FacebookLoginResult,
         FacebookLoginStatus;
 
-import 'package:flutter_twitter/flutter_twitter.dart';
+import 'package:flutter_twitter/flutter_twitter.dart'
+    show TwitterLogin, TwitterLoginResult, TwitterLoginStatus, TwitterSession;
+
+//import 'package:apple_sign_in/apple_sign_in.dart';
 
 typedef void FireBaseListener(FirebaseUser user);
 typedef Future<FirebaseUser> FireBaseUser();

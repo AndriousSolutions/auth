@@ -1,3 +1,9 @@
+
+## 4.0.1
+ November 26, 2019
+- **Fix Breaking Change** google_sign_in_platform_interface: ^1.0.0
+- firebase_auth: ^0.15.0
+
 ## 4.0.0
  October 02, 2019
 - removed signIn()
