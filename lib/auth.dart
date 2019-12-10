@@ -109,8 +109,8 @@ class Auth {
   bool _isAnonymous = false;
 
   factory Auth.init({
-    SignInOption signInOption,
-    List<String> scopes,
+    SignInOption signInOption = SignInOption.standard,
+    List<String> scopes = const <String>[],
     String hostedDomain,
     void listen(GoogleSignInAccount account),
     void listener(FirebaseUser user),

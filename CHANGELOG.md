@@ -1,3 +1,7 @@
+## 4.0.2
+ December 10, 2019
+- SignInOption signInOption = SignInOption.standard
+
 ## 4.0.1
  November 26, 2019
 - **Fix Breaking Change**  google_sign_in_platform_interface: ^1.0.0
