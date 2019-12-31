@@ -592,9 +592,12 @@ class Auth {
     if (logIn) addListener(listener);
 
     if (!logIn) {
-      /// Attempt to sign in with Google without user interaction
-      logIn =
-          await signInWithGoogleSilently(listen: listen, suppressErrors: true);
+      /// Attempt to sign in with Twitter without user interaction
+      logIn = await signInWithTwitterSilently(
+        key: key,
+        secret: secret,
+        listener: listener,
+      );
     }
 
     if (!logIn) {
@@ -604,14 +607,11 @@ class Auth {
         listener: listener,
       );
     }
-
+    
     if (!logIn) {
-      /// Attempt to sign in with Twitter without user interaction
-      logIn = await signInWithTwitterSilently(
-        key: key,
-        secret: secret,
-        listener: listener,
-      );
+      /// Attempt to sign in with Google without user interaction
+      logIn =
+          await signInWithGoogleSilently(listen: listen, suppressErrors: true);
     }
 
     return logIn;
@@ -640,18 +640,18 @@ class Auth {
     _initListen(listen: listen);
 
     // Attempt to get the currently authenticated user
-    GoogleSignInAccount currentUser = _googleSignIn.currentUser;
+    GoogleSignInAccount currentUser = _googleSignIn?.currentUser;
 
     if (currentUser == null) {
       try {
         // Attempt to sign in without user interaction
         currentUser = await _googleSignIn
-            .signInSilently(suppressErrors: suppressErrors)
-            .catchError((ex) {
+            ?.signInSilently(suppressErrors: suppressErrors)
+            ?.catchError((ex) {
           _setError(ex);
-        }).then((user) {
+        })?.then((user) {
           return user;
-        }).catchError((ex) {
+        })?.catchError((ex) {
           _setError(ex);
         });
       } catch (ex) {
