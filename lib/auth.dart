@@ -25,6 +25,8 @@ library auth;
 
 import 'dart:async' show Future, StreamSubscription;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:flutter/material.dart' show required;
 
 import 'package:firebase_auth/firebase_auth.dart'
@@ -591,23 +593,26 @@ class Auth {
     // Logged in but add the listener anyway.
     if (logIn) addListener(listener);
 
-    if (!logIn) {
-      /// Attempt to sign in with Twitter without user interaction
-      logIn = await signInWithTwitterSilently(
-        key: key,
-        secret: secret,
-        listener: listener,
-      );
+    // Don't call these routines if running on the Web.
+    if(!kIsWeb) {
+      if (!logIn) {
+        /// Attempt to sign in with Twitter without user interaction
+        logIn = await signInWithTwitterSilently(
+          key: key,
+          secret: secret,
+          listener: listener,
+        );
+      }
+
+      if (!logIn) {
+        /// Attempt to sign in with Facebook without user interaction
+        logIn = await signInWithFacebookSilently(
+          permissions: permissions,
+          listener: listener,
+        );
+      }
     }
 
-    if (!logIn) {
-      /// Attempt to sign in with Facebook without user interaction
-      logIn = await signInWithFacebookSilently(
-        permissions: permissions,
-        listener: listener,
-      );
-    }
-    
     if (!logIn) {
       /// Attempt to sign in with Google without user interaction
       logIn =
@@ -884,6 +889,10 @@ class Auth {
     void listener(FirebaseUser user),
     bool silently = false,
   }) async {
+
+    assert(!kIsWeb, "Facebook plugin will crash if app running on the Web");
+    if(kIsWeb) return false;
+    
     try {
       _facebookLogin ??= FacebookLogin();
     } catch (ex) {
@@ -992,6 +1001,10 @@ class Auth {
     bool silently = false,
     bool suppressAsserts = false,
   }) async {
+
+    assert(!kIsWeb, "Twitter plugin will crash if app running on the Web");
+    if(kIsWeb) return false;
+
     key ??= _key ?? "";
     secret ??= _secret ?? "";
 

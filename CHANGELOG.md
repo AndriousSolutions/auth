@@ -1,5 +1,9 @@
+## 4.2.0
+- if(kIsWeb) return false;  Allow package on Flutter Web.
+
 ## 4.1.0
 - Reordered routines in signInSilently() Try Twitter, Facebook then Google signIn's
+
 ## 4.0.2
  December 10, 2019
 - SignInOption signInOption = SignInOption.standard
