@@ -21,22 +21,4 @@
 ///
 ///
 
-export 'package:auth/src/auth.dart';
-
-// This works! Supply them through this dart file
-export 'package:firebase_auth/firebase_auth.dart'
-    show
-    AdditionalUserInfo,
-    AuthResult,
-    AuthCredential,
-    FirebaseAuth,
-    FacebookAuthProvider,
-    FirebaseUser,
-    IdTokenResult,
-    GoogleAuthProvider,
-    TwitterAuthProvider,
-    UserUpdateInfo;
-
-// This works! Supply them through this dart file
-export 'package:google_sign_in/google_sign_in.dart'
-    show GoogleSignIn, GoogleSignInAccount, GoogleSignInAuthentication;
+export 'package:auth/src/auth_web.dart';

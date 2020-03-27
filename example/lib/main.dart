@@ -8,7 +8,8 @@ import 'package:flutter/services.dart' show SystemChannels, TextInputType;
 
 import 'package:google_sign_in/google_sign_in.dart' show GoogleUserCircleAvatar;
 
-import 'package:auth/auth.dart' show Auth;
+import 'package:auth/auth.dart'
+if (dart.library.html) 'package:auth/auth_web.dart';
 
 void main() {
   runApp(
@@ -37,7 +38,7 @@ class SignInDemoState extends State<SignInDemo>
 
     tabController = TabController(length: 2, vsync: this);
 
-    auth = Auth.init(
+    auth = Auth(
         scopes: [
           'email',
           'https://www.googleapis.com/auth/contacts.readonly',

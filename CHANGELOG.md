@@ -1,3 +1,6 @@
+## 5.0.0
+- Separate 'web version' in auth_web.dart
+
 ## 4.2.0
 - if(kIsWeb) return false;  Allow package on Flutter Web.
 
