@@ -75,13 +75,13 @@ class Auth {
   String _key;
   String _secret;
 
-  Set<FireBaseListener> _fireBaseListeners = Set();
-  bool _firebaseRunning = false;
+  Set<FireBaseListener> _fireBaseListeners;
+  bool _firebaseRunning;
 
-  Set<GoogleListener> _googleListeners = Set();
-  bool _googleRunning = false;
+  Set<GoogleListener> _googleListeners;
+  bool _googleRunning;
 
-  List<Exception> _eventErrors = List();
+  List<Exception> _eventErrors;
 
   factory Auth({
     SignInOption signInOption = SignInOption.standard,
@@ -92,9 +92,8 @@ class Auth {
     List<String> permissions,
     String key,
     String secret,
-  }) {
-    if (_this == null) {
-      _this = Auth._(
+  }) =>
+      _this ??= Auth._(
         signInOption: signInOption,
         scopes: scopes,
         hostedDomain: hostedDomain,
@@ -104,11 +103,6 @@ class Auth {
         key: key,
         secret: secret,
       );
-    }
-
-    /// Any subsequent instantiations are ignored.
-    return _this;
-  }
 
   Auth._({
     SignInOption signInOption,
@@ -120,6 +114,14 @@ class Auth {
     String key,
     String secret,
   }) {
+    _fireBaseListeners = Set();
+    _firebaseRunning = false;
+
+    _googleListeners = Set();
+    _googleRunning = false;
+
+    _eventErrors = List();
+
     _initFireBase(listener: listener);
 
     if (_mobGoogleSignIn == null) {
@@ -584,9 +586,9 @@ class Auth {
   /// returned Future completes with [PlatformException] whose `code` can be
   /// either [kSignInRequiredError] (when there is no authenticated user) or
   /// [kSignInFailedError] (when an unknown error occurred).
-  Future<bool> signInWithGoogleSilently({
-    void listen(GoogleSignInAccount user),
-    bool suppressErrors = true}) async {
+  Future<bool> signInWithGoogleSilently(
+      {void listen(GoogleSignInAccount user),
+      bool suppressErrors = true}) async {
     _initListen(listen: listen);
 
     // Attempt to get the currently authenticated user
@@ -652,8 +654,8 @@ class Auth {
     bool firebaseUser = true,
   }) async {
     /// Attempt to sign in without user interaction
-    bool logIn = await signInWithGoogleSilently(
-        listen: listen, suppressErrors: true);
+    bool logIn =
+        await signInWithGoogleSilently(listen: listen, suppressErrors: true);
 
     if (!logIn) {
       /// Force the user to interactively sign in
@@ -967,7 +969,7 @@ class Auth {
         suppressAsserts: true,
       );
 
-  /// Sign into Firebase by logging into Facebook
+  /// Sign into Firebase by logging into Twitter
   ///
   ///  https://pub.dev/packages/flutter_twitter
   ///
@@ -1286,7 +1288,8 @@ class Auth {
   }
 
   // firebaseUser = true will check if logged in Firebase
-  Future<bool> _setFireBaseUserFromGoogle(GoogleSignInAccount googleUser) async {
+  Future<bool> _setFireBaseUserFromGoogle(
+      GoogleSignInAccount googleUser) async {
     final GoogleSignInAuthentication auth = await googleUser?.authentication;
 
     FirebaseUser user;

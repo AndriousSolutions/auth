@@ -1,3 +1,6 @@
+## 5.0.1
+- Initialize Set variables in the constructor.
+
 ## 5.0.0
 - Separate 'web version' in auth_web.dart
 
