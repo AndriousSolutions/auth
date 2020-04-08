@@ -9,7 +9,7 @@ import 'package:flutter/services.dart' show SystemChannels, TextInputType;
 import 'package:google_sign_in/google_sign_in.dart' show GoogleUserCircleAvatar;
 
 import 'package:auth/auth.dart'
-if (dart.library.html) 'package:auth/auth_web.dart';
+    if (dart.library.html) 'package:auth/auth_web.dart';
 
 void main() {
   runApp(

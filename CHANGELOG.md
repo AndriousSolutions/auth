@@ -1,3 +1,6 @@
+## 5.0.2
+- if (_fireBaseListeners != null) // Odd error at times. gp
+
 ## 5.0.1
 - Initialize Set variables in the constructor.
 

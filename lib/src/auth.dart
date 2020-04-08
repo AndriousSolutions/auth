@@ -303,11 +303,23 @@ class Auth {
     return providers;
   }
 
+  bool get hasError => _ex != null;
+
+  bool get inError => _ex != null;
+
   /// Get the last error but clear it.
   Exception getError() {
     Exception e = _ex;
     _ex = null;
     return e;
+  }
+
+  void setError(Object ex) {
+    if (ex is! Exception) {
+      _ex = Exception(ex.toString());
+    } else {
+      _ex = ex;
+    }
   }
 
   List<Exception> getEventError() {
@@ -1262,9 +1274,10 @@ class Auth {
     if (_firebaseRunning) return;
     _firebaseRunning = true;
     await _setUserFromFireBase(user);
-    for (var listener in _fireBaseListeners) {
-      listener(user);
-    }
+    if (_fireBaseListeners != null) // Odd error at times. gp
+      for (var listener in _fireBaseListeners) {
+        listener(user);
+      }
     _firebaseRunning = false;
   }
 
@@ -1277,14 +1290,6 @@ class Auth {
       listener(account);
     }
     _googleRunning = false;
-  }
-
-  void setError(Object ex) {
-    if (ex is! Exception) {
-      _ex = Exception(ex.toString());
-    } else {
-      _ex = ex;
-    }
   }
 
   // firebaseUser = true will check if logged in Firebase
