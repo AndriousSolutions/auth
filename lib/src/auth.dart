@@ -46,12 +46,16 @@ import 'package:google_sign_in/google_sign_in.dart'
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
     show SignInOption;
 
-import 'package:flutter_facebook_login/flutter_facebook_login.dart'
-    show
-        FacebookAccessToken,
-        FacebookLogin,
-        FacebookLoginResult,
-        FacebookLoginStatus;
+//import 'package:flutter_facebook_login/flutter_facebook_login.dart'
+//    show
+//        FacebookAccessToken,
+//        FacebookLogin,
+//        FacebookLoginResult,
+//        FacebookLoginStatus;
+
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
+
+export 'package:flutter_login_facebook/flutter_login_facebook.dart';
 
 import 'package:flutter_twitter/flutter_twitter.dart';
 
@@ -89,7 +93,7 @@ class Auth {
     String hostedDomain,
     void listen(GoogleSignInAccount account),
     void listener(FirebaseUser user),
-    List<String> permissions,
+    List<FacebookPermission> permissions,
     String key,
     String secret,
   }) =>
@@ -110,7 +114,7 @@ class Auth {
     String hostedDomain,
     void listen(GoogleSignInAccount account),
     void listener(FirebaseUser user),
-    List<String> permissions,
+    List<FacebookPermission> permissions,
     String key,
     String secret,
   }) {
@@ -146,8 +150,8 @@ class Auth {
   }
 
   /// Facebook Login List of permissions.
-  List<String> get permissions => _permissions;
-  final List<String> _permissions = List();
+  List<FacebookPermission> get permissions => _permissions;
+  final List<FacebookPermission> _permissions = List();
 
   String get accessToken => _accessToken ?? "";
   String _accessToken = "";
@@ -865,7 +869,7 @@ class Auth {
 
   /// Silently Sign into Firebase with Facebook
   Future<bool> signInWithFacebookSilently({
-    List<String> permissions,
+    List<FacebookPermission> permissions,
     void listener(FirebaseUser user),
   }) =>
       signInWithFacebook(
@@ -879,7 +883,7 @@ class Auth {
   /// https://pub.dev/packages/flutter_facebook_login
   ///
   Future<bool> signInWithFacebook({
-    List<String> permissions,
+    List<FacebookPermission> permissions,
     void listener(FirebaseUser user),
     bool silently = false,
   }) async {
@@ -904,31 +908,37 @@ class Auth {
 
     if (loggedIn || silently) {
       try {
-        access = await _facebookLogin.currentAccessToken;
+        access = await _facebookLogin.accessToken;
       } catch (ex) {
         setError(ex);
       }
       token = access?.token ?? "";
     } else {
       permissions ??= _permissions;
-      if (permissions.isEmpty) permissions = ['email'];
+
+      if (permissions.isEmpty) permissions = [FacebookPermission.email];
+
       FacebookLoginResult result;
+
       try {
-        result = await _facebookLogin.logIn(permissions);
-        switch (result.status) {
-          case FacebookLoginStatus.loggedIn:
-            token = result?.accessToken?.token ?? "";
-            break;
-          case FacebookLoginStatus.cancelledByUser:
-            token = "";
-            break;
-          case FacebookLoginStatus.error:
-            token = "";
-            setError(Exception(result.errorMessage));
-            break;
+
+        result = await _facebookLogin.logIn(permissions: permissions);
+
+        if (result.status == FacebookLoginStatus.Success) {
+          //
+          token = result?.accessToken?.token ?? "";
+        } else if (result.status == FacebookLoginStatus.Cancel) {
+          //
+          token = "";
+        } else if (result.status == FacebookLoginStatus.Error) {
+          //
+          token = "";
+          setError(Exception(result.error.developerMessage));
         }
       } catch (ex) {
+
         token = "";
+
         setError(ex);
       }
     }
@@ -948,7 +958,7 @@ class Auth {
 
   /// SignIn using Facebook.
   Future<bool> signInFacebook({
-    List<String> permissions,
+    List<FacebookPermission> permissions,
     void listener(FirebaseUser user),
   }) async {
     /// Attempt to sign in without user interaction

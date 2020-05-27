@@ -1,3 +1,6 @@
+## 6.0.0
+- Replaced plugin flutter_facebook_login with flutter_login_facebook
+
 ## 5.0.2
 - if (_fireBaseListeners != null) // Odd error at times. gp
 
