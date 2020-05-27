@@ -921,7 +921,6 @@ class Auth {
       FacebookLoginResult result;
 
       try {
-
         result = await _facebookLogin.logIn(permissions: permissions);
 
         if (result.status == FacebookLoginStatus.Success) {
@@ -936,7 +935,6 @@ class Auth {
           setError(Exception(result.error.developerMessage));
         }
       } catch (ex) {
-
         token = "";
 
         setError(ex);

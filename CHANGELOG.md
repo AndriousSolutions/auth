@@ -1,3 +1,6 @@
+## 6.0.1
+- upgrade to firebase_auth: ^0.16.0
+
 ## 6.0.0
 - Replaced plugin flutter_facebook_login with flutter_login_facebook
 
