@@ -1,3 +1,6 @@
+## 6.0.2
+- Replaced deprecated api with flutter_twitter_login:
+
 ## 6.0.1
 - upgrade to firebase_auth: ^0.16.0
 

@@ -57,7 +57,7 @@ import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 
 export 'package:flutter_login_facebook/flutter_login_facebook.dart';
 
-import 'package:flutter_twitter/flutter_twitter.dart';
+import 'package:flutter_twitter_login/flutter_twitter_login.dart';
 
 typedef void FireBaseListener(FirebaseUser user);
 typedef Future<FirebaseUser> FireBaseUser();
