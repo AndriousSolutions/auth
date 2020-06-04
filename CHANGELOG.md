@@ -1,3 +1,7 @@
+## 6.0.3
+ June 03, 2020
+- Corrected Apache Licence.
+
 ## 6.0.2
 - Replaced deprecated api with flutter_twitter_login:
 
