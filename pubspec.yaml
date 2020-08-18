@@ -1,13 +1,13 @@
 name: auth
 description: Authorization Library Package to log into Google, Facebook, or by Username and Password.
 
-version: 6.0.3
+version: 6.0.4
 
 homepage: https://github.com/AndriousSolutions/auth
 repository: https://github.com/AndriousSolutions/auth
 
 environment:
-  sdk: '>=2.6.0 <3.0.0'
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
   flutter:
@@ -38,6 +38,12 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  # Setting up Lint Rules
+  # Most of the recommended lints directly implement the guidelines set out in Effective Dart:
+  # https://dart.dev/guides/language/effective-dart
+  # https://pub.dev/packages/pedantic
+  pedantic: ^1.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

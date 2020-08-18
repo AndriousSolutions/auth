@@ -149,18 +149,18 @@ class Auth {
   List<FacebookPermission> get permissions => _permissions;
   final List<FacebookPermission> _permissions = List();
 
-  String get accessToken => _accessToken ?? "";
-  String _accessToken = "";
+  String get accessToken => _accessToken ?? '';
+  String _accessToken = '';
 
   DateTime get authTime => _idTokenResult?.authTime ?? DateTime.now();
 
   Map<dynamic, dynamic> get claims => _idTokenResult?.claims ?? {};
 
   String get displayName => _displayName;
-  String _displayName = "";
+  String _displayName = '';
 
   String get email => _email;
-  String _email = "";
+  String _email = '';
 
   bool get eventErrors => _eventErrors.isNotEmpty;
 
@@ -1337,7 +1337,7 @@ class Auth {
 
     _isAnonymous = _user?.isAnonymous ?? true;
 
-    _uid = _user?.uid ?? "";
+    _uid = _user?.uid ?? " ";
 
     _displayName = _user?.displayName ?? "";
 
@@ -1347,8 +1347,12 @@ class Auth {
 
     _phoneNumber = _user?.phoneNumber ?? "";
 
-    // Perform this 'await' near the end to assign the rest.
-    _idTokenResult = await _user?.getIdToken();
+    try {
+      // Perform this 'await' near the end to assign the rest.
+      _idTokenResult = await _user?.getIdToken();
+    }catch(ex){
+      setError(ex);
+    }
 
     _idToken = _idTokenResult?.token ?? "";
 
