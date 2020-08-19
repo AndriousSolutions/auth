@@ -1,5 +1,11 @@
+## 6.1.0
+ August 19, 2020
+- Format code to Strict Flutter lint rules
+- setError() catches 'network_error' #7
+
 ## 6.0.4
-try-catch on getIdToken();
+ August 17, 2020
+- try-catch on getIdToken();
 
 ## 6.0.3
  June 03, 2020
