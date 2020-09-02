@@ -60,9 +60,7 @@ class SignInDemoState extends State<SignInDemo>
       },
     );
 
-    auth.isLoggedIn().then((isIn) {
-      loggedIn = isIn;
-    });
+    loggedIn = auth.isLoggedIn();
   }
 
   @override

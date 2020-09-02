@@ -1,3 +1,15 @@
+## 7.0.0
+ September 02, 2020
+- Upgrade to firebase_auth 0.18.0+1
+- **BREAKING:** The FirebaseUser class has been renamed to User.
+- currentUser() to getter currentUser.
+- **DEPRECATED:** updatePhoneNumberCredential(); to updatePhoneNumber();
+- **BREAKING:** Accessing the current user via currentUser() is now synchronous via the currentUser getter.
+- **BREAKING:** alreadyLoggedIn(), isLoggedIn() and isSignInWithEmailLink() is now synchronous.
+- **BREAKING:** unlinkFromProvider() no longer functional.
+- **DEPRECATED:** FirebaseAuth.fromApp() is now deprecated in favor of FirebaseAuth.instanceFor().
+- **DEPRECATED:** onAuthStateChanged has been deprecated in favor of authStateChanges().
+
 ## 6.1.0
  August 19, 2020
 - Format code to Strict Flutter lint rules
