@@ -1,3 +1,18 @@
+## 7.1.0
+ September 30, 2020
+- Updated dependency:
+ flutter_login_facebook
+ 
+## 7.0.1
+ September 03, 2020
+- getRedirectResult()
+- isSignInWithEmailLink()
+- idTokenChanges()
+- userChanges()
+- setSettings()
+- checkActionCode()
+- applyActionCode()
+
 ## 7.0.0
  September 02, 2020
 - Upgrade to firebase_auth 0.18.0+1

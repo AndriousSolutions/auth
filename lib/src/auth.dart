@@ -23,6 +23,7 @@ import 'dart:async' show Future, StreamSubscription;
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart'
     show
+        ActionCodeInfo,
         AdditionalUserInfo,
         UserCredential,
         AuthCredential,
@@ -164,7 +165,7 @@ class Auth {
   DateTime get expirationTime =>
       _idTokenResult?.expirationTime ?? DateTime.now();
 
-  @Deprecated('No access to Firebase Auth')
+//  @Deprecated('No access to Firebase Auth')
   FirebaseAuth get firebaseAuth => _fbAuth;
 
   GoogleSignIn get googleSignIn => _googleIn;
@@ -218,8 +219,7 @@ class Auth {
 
   bool get isNewUser => _result?.additionalUserInfo?.isNewUser ?? false;
 
-  String get providerId =>
-      _result?.additionalUserInfo?.providerId ?? '';
+  String get providerId => _result?.additionalUserInfo?.providerId ?? '';
 
   bool alreadyLoggedIn([GoogleSignInAccount googleUser]) {
     User fireBaseUser;
@@ -336,6 +336,30 @@ class Auth {
     return errors;
   }
 
+  /// Applies a verification code sent to the user by email or other out-of-band
+  /// mechanism.
+  ///
+  /// A [FirebaseAuthException] may be thrown
+  Future<void> applyActionCode(String code) {
+    if (code == null || code.isEmpty) {
+      return Future.value();
+    }
+    return _modAuth.applyActionCode(code);
+  }
+
+  /// Checks a verification code sent to the user by email or other out-of-band
+  /// mechanism.
+  ///
+  /// Returns [ActionCodeInfo] about the code.
+  ///
+  /// A [FirebaseAuthException] may be thrown:
+  Future<ActionCodeInfo> checkActionCode(String code) {
+    if (code == null || code.isEmpty) {
+      return Future.value();
+    }
+    return _modAuth.checkActionCode(code);
+  }
+
   /// Obtains the id token result for the current user, forcing a [refresh] if desired.
   ///
   /// Useful when authenticating against your own backend. Use our server
@@ -353,6 +377,23 @@ class Auth {
     }
     return result;
   }
+
+  /// Notifies about changes to the user's sign-in state (such as sign-in or
+  /// sign-out) and also token refresh events.
+  Stream<User> idTokenChanges() => _modAuth.idTokenChanges();
+
+  /// Notifies about changes to any user updates.
+  ///
+  Stream<User> userChanges() => _modAuth.userChanges();
+
+  /// Updates the current instance with the provided settings.
+  ///
+  Future<void> setSettings(
+          {bool appVerificationDisabledForTesting, String userAccessGroup}) =>
+      _modAuth.setSettings(
+        appVerificationDisabledForTesting: appVerificationDisabledForTesting,
+        userAccessGroup: userAccessGroup,
+      );
 
   @Deprecated('Use addListener() instead.')
   bool fireBaseListener(FireBaseListener f) => addListener(f);
@@ -875,6 +916,30 @@ class Auth {
     return user?.uid?.isNotEmpty ?? false;
   }
 
+  /// Completes the password reset process, given a confirmation code and new
+  /// password.
+  ///
+  ///  - Thrown if the new password is not strong enough.
+  Future<void> confirmPasswordReset({String code, String newPassword}) =>
+      confirmPasswordReset(code: code, newPassword: newPassword);
+
+  /// Returns a UserCredential from the redirect-based sign-in flow.
+  ///
+  /// If sign-in succeeded, returns the signed in user. If sign-in was
+  /// unsuccessful, fails with an error. If no redirect operation was called,
+  /// returns a [UserCredential] with a null User.
+  ///
+  /// This method is only support on web platforms.
+  Future<UserCredential> getRedirectResult() => _modAuth.getRedirectResult();
+
+  /// Checks if an incoming link is a sign-in with email link.
+  bool isSignInWithEmailLink(String emailLink) {
+    if (emailLink == null || emailLink.isEmpty) {
+      return false;
+    }
+    return _modAuth.isSignInWithEmailLink(emailLink);
+  }
+
   /// Silently Sign into Firebase with Facebook
   Future<bool> signInWithFacebookSilently({
     List<FacebookPermission> permissions,
@@ -1161,9 +1226,7 @@ class Auth {
   ///   • `ERROR_NO_SUCH_PROVIDER` - If the user does not have a Github Account linked to their account.
   ///   • `ERROR_REQUIRES_RECENT_LOGIN` - If the user's last sign-in time does not meet the security threshold. Use reauthenticate methods to resolve.
   @Deprecated('unlinkFromProvider() no longer functional.')
-  Future<void> unlinkFromProvider(String provider) async {
-
-  }
+  Future<void> unlinkFromProvider(String provider) async {}
 
   /// Updates the email address of the user.
   ///
