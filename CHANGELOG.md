@@ -1,3 +1,7 @@
+## 7.2.0
+ October 06, 2020
+- Include await Firebase.initializeApp();
+
 ## 7.1.0
  September 30, 2020
 - Updated dependency:

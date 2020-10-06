@@ -21,6 +21,7 @@ library auth;
 
 import 'dart:async' show Future, StreamSubscription;
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:firebase_auth/firebase_auth.dart'
     show
         ActionCodeInfo,
@@ -1318,17 +1319,18 @@ class Auth {
     _eventErrors.add(ex);
   }
 
-  void _initFireBase({
+  Future<void> _initFireBase({
     void Function(User user) listener,
     Function onError,
     void Function() onDone,
     bool cancelOnError = false,
-  }) {
+  }) async {
     // Clear any errors first.
     getError();
     getEventError();
 
     if (_modAuth == null) {
+      await Firebase.initializeApp();
       _modAuth = FirebaseAuth.instance;
       _firebaseListener = _modAuth.authStateChanges().listen(
           _listFireBaseListeners,
