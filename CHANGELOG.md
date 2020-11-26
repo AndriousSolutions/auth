@@ -1,6 +1,11 @@
+## 7.3.0
+ November 26, 2020
+- Updated flutter_login_facebook ^0.2.0
+- Stricter Lint Rules
+
 ## 7.2.0
  October 06, 2020
-- Include await Firebase.initializeApp();
+- Include await Firebase.initializeApp(); in firebase_core: ^0.5.0
 
 ## 7.1.0
  September 30, 2020

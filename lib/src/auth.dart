@@ -253,12 +253,17 @@ class Auth {
   ///   • `ERROR_INVALID_CREDENTIAL` - If the credential is malformed or has expired.
   ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
   ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
-  Future<void> delete() async {
-    try {
-      await _user?.delete();
-    } catch (ex) {
-      setError(ex);
+  Future<bool> delete() async {
+    bool delete = false;
+    if (_user != null) {
+      try {
+        await _user.delete();
+        delete = true;
+      } catch (ex) {
+        setError(ex);
+      }
     }
+    return delete;
   }
 
   /// Important to call this function when terminating the you app.
@@ -340,7 +345,7 @@ class Auth {
   /// Applies a verification code sent to the user by email or other out-of-band
   /// mechanism.
   ///
-  /// A [FirebaseAuthException] may be thrown
+  /// A FirebaseAuthException may be thrown
   Future<void> applyActionCode(String code) {
     if (code == null || code.isEmpty) {
       return Future.value();
@@ -353,7 +358,7 @@ class Auth {
   ///
   /// Returns [ActionCodeInfo] about the code.
   ///
-  /// A [FirebaseAuthException] may be thrown:
+  /// A FirebaseAuthException may be thrown:
   Future<ActionCodeInfo> checkActionCode(String code) {
     if (code == null || code.isEmpty) {
       return Future.value();
@@ -577,7 +582,7 @@ class Auth {
     if (loggedIn) {
       return loggedIn;
     }
-    _initFireBase(listener: listener);
+    await _initFireBase(listener: listener);
 
     User user;
     try {
@@ -757,7 +762,7 @@ class Auth {
       return loggedIn;
     }
 
-    _initFireBase(listener: listener);
+    await _initFireBase(listener: listener);
 
     User user;
     try {
@@ -808,7 +813,7 @@ class Auth {
       return loggedIn;
     }
 
-    _initFireBase(listener: listener);
+    await _initFireBase(listener: listener);
 
     User user;
     try {
@@ -858,7 +863,7 @@ class Auth {
       return loggedIn;
     }
 
-    _initFireBase(listener: listener);
+    await _initFireBase(listener: listener);
 
     User user;
     try {
@@ -898,7 +903,7 @@ class Auth {
 //    final loggedIn = await alreadyLoggedIn();
 //    if (loggedIn) return loggedIn;
 
-    _initFireBase(listener: listener);
+    await _initFireBase(listener: listener);
 
     User user;
     try {

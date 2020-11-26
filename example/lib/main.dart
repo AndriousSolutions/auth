@@ -11,16 +11,15 @@ import 'package:google_sign_in/google_sign_in.dart' show GoogleUserCircleAvatar;
 import 'package:auth/auth.dart'
     if (dart.library.html) 'package:auth/auth_web.dart';
 
-void main() {
-  runApp(
-    MaterialApp(
-      home: SignInDemo(),
-      debugShowCheckedModeBanner: false,
-    ),
-  );
-}
+void main() => runApp(
+      const MaterialApp(
+        home: SignInDemo(),
+        debugShowCheckedModeBanner: false,
+      ),
+    );
 
 class SignInDemo extends StatefulWidget {
+  const SignInDemo({Key key}) : super(key: key);
   @override
   State createState() => SignInDemoState();
 }
@@ -30,7 +29,7 @@ class SignInDemoState extends State<SignInDemo>
   Auth auth;
   bool loggedIn = false;
   TabController tabController;
-  String errorMessage = "";
+  String errorMessage = '';
 
   @override
   void initState() {
@@ -56,7 +55,7 @@ class SignInDemoState extends State<SignInDemo>
         setState(() {});
       },
       listener: (user) {
-        final test = user != null;
+//        final test = user != null;
       },
     );
 
@@ -74,11 +73,11 @@ class SignInDemoState extends State<SignInDemo>
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Sign In Demo"),
+          title: const Text('Sign In Demo'),
           bottom: TabBar(
-            tabs: [
-              const Tab(text: "Sign In"),
-              const Tab(text: "Results"),
+            tabs: const [
+              Tab(text: 'Sign In'),
+              Tab(text: 'Results'),
             ],
             controller: tabController,
           ),
@@ -110,103 +109,124 @@ class SignInDemoState extends State<SignInDemo>
                 ? GoogleUserCircleAvatar(
                     identity: auth.googleUser,
                   )
-                : Text(''),
+                : const Text(''),
             title: Text(auth.displayName),
             subtitle: Text(auth.email),
           ),
-          const Text("Signed in successfully."),
+          const Text('Signed in successfully.'),
           signInErrorMsg,
           RaisedButton(
-            child: const Text('Sign Out of Firebase'),
             onPressed: () {
               auth.signOut();
             },
+            child: const Text('Sign Out of Firebase'),
           ),
           RaisedButton(
-            child: const Text('Sign Out & Disconnect'),
             onPressed: () {
               auth.disconnect();
             },
+            child: const Text('Sign Out & Disconnect'),
           ),
           RaisedButton(
-            child: const Text('Just Quit'),
             onPressed: () {
               SystemChannels.platform.invokeMethod('SystemNavigator.pop');
             },
+            child: const Text('Just Quit'),
           ),
         ],
       );
     } else {
       // This function is called by every RaisedButton widget.
-      Function signInFunc = (signIn) {
+      void signInFunc({bool signIn}) {
         if (signIn) {
-          errorMessage = "";
+          errorMessage = '';
         } else {
           errorMessage = auth.message;
         }
         setState(() {});
-      };
+      }
 
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
-          const Text("You are not currently signed in."),
+          const Text('You are not currently signed in.'),
           signInErrorMsg,
           RaisedButton(
-            child: const Text('Sign In With Facebook'),
             onPressed: () {
-              auth.signInWithFacebook().then(signInFunc).catchError((err) {
-                if (err is! Exception) err = err.toString();
+              auth
+                  .signInWithFacebook()
+                  .then((signIn) => signInFunc(signIn: signIn))
+                  .catchError((Object err) {
+                if (err is! Exception) {
+                  err = err.toString();
+                }
                 errorMessage = auth.message;
               });
             },
+            child: const Text('Sign In With Facebook'),
           ),
           RaisedButton(
-            child: const Text('Sign In With Twitter'),
             onPressed: () {
               auth
                   .signInWithTwitter(
-                      key: "ab1cefgh23KlmnOpQ4STUVWx5",
+                      key: 'ab1cefgh23KlmnOpQ4STUVWx4',
                       secret:
-                          "ab1cefgh23KlmnOpQ4STUVWx5y6ZabCDe7ghi8jKLMnOP9qRst")
-                  .then(signInFunc)
-                  .catchError((err) {
-                if (err is! Exception) err = err.toString();
+                          'ab1cefgh23KlmnOpQ4STUVWx4y6ZabCDe7ghi8jKLMnOP9qRst')
+                  .then((signIn) => signInFunc(signIn: signIn))
+                  .catchError((Object err) {
+                if (err is! Exception) {
+                  err = err.toString();
+                }
                 errorMessage = auth.message;
               });
             },
+            child: const Text('Sign In With Twitter'),
           ),
           RaisedButton(
-            child: const Text('Sign In With Google'),
             onPressed: () {
-              auth.signInWithGoogle().then(signInFunc).catchError((err) {
-                if (err is! Exception) err = err.toString();
-                errorMessage = auth.message;
-              });
-            },
-          ),
-          RaisedButton(
-            child: const Text('Log in anonymously'),
-            onPressed: () {
-              auth.signInAnonymously().then(signInFunc).catchError((err) {
-                if (err is! Exception) err = err.toString();
-                errorMessage = auth.message;
-              });
-            },
-          ),
-          RaisedButton(
-            child: const Text('Sign in with Email & Password'),
-            onPressed: () async {
-              List<String> ep = await dialogBox(context: context);
-              if (ep == null || ep.isEmpty) return;
               auth
-                  .signInWithEmailAndPassword(email: ep[0], password: ep[1])
-                  .then(signInFunc)
-                  .catchError((err) {
-                if (err is! Exception) err = err.toString();
+                  .signInWithGoogle()
+                  .then((signIn) => signInFunc(signIn: signIn))
+                  .catchError((Object err) {
+                if (err is! Exception) {
+                  err = err.toString();
+                }
                 errorMessage = auth.message;
               });
             },
+            child: const Text('Sign In With Google'),
+          ),
+          RaisedButton(
+            onPressed: () {
+              auth
+                  .signInAnonymously()
+                  .then((signIn) => signInFunc(signIn: signIn))
+                  .catchError((Object err) {
+                if (err is! Exception) {
+                  err = err.toString();
+                }
+                errorMessage = auth.message;
+              });
+            },
+            child: const Text('Log in anonymously'),
+          ),
+          RaisedButton(
+            onPressed: () async {
+              final List<String> ep = await dialogBox(context: context);
+              if (ep == null || ep.isEmpty) {
+                return;
+              }
+              await auth
+                  .signInWithEmailAndPassword(email: ep[0], password: ep[1])
+                  .then((signIn) => signInFunc(signIn: signIn))
+                  .catchError((Object err) {
+                if (err is! Exception) {
+                  err = err.toString();
+                }
+                errorMessage = auth.message;
+              });
+            },
+            child: const Text('Sign in with Email & Password'),
           ),
         ],
       );
@@ -214,25 +234,25 @@ class SignInDemoState extends State<SignInDemo>
   }
 
   Widget get _authResults => ListView(
-        padding: const EdgeInsets.all(30.0),
-        itemExtent: 80.0,
+        padding: const EdgeInsets.all(30),
+        itemExtent: 80,
         children: <Widget>[
-          Text("uid: ${auth.uid}"),
-          Text("name: ${auth.displayName}"),
-          Text("photo: ${auth.photoUrl}"),
-          Text("new login: ${auth.isNewUser}"),
-          Text("user name: ${auth.username}"),
-          Text("email: ${auth.email}"),
-          Text("email verified: ${auth.isEmailVerified}"),
-          Text("anonymous login: ${auth.isAnonymous}"),
-          Text("permissions: ${auth.permissions}"),
-          Text("id token: ${auth.idToken}"),
-          Text("access token: ${auth.accessToken}"),
-          Text("information provider: ${auth.providerId}"),
-          Text("expire time: ${auth.expirationTime}"),
-          Text("auth time: ${auth.authTime}"),
-          Text("issued at: ${auth.issuedAtTime}"),
-          Text("signin provider: ${auth.signInProvider}"),
+          Text('uid: ${auth.uid}'),
+          Text('name: ${auth.displayName}'),
+          Text('photo: ${auth.photoUrl}'),
+          Text('new login: ${auth.isNewUser}'),
+          Text('user name: ${auth.username}'),
+          Text('email: ${auth.email}'),
+          Text('email verified: ${auth.isEmailVerified}'),
+          Text('anonymous login: ${auth.isAnonymous}'),
+          Text('permissions: ${auth.permissions}'),
+          Text('id token: ${auth.idToken}'),
+          Text('access token: ${auth.accessToken}'),
+          Text('information provider: ${auth.providerId}'),
+          Text('expire time: ${auth.expirationTime}'),
+          Text('auth time: ${auth.authTime}'),
+          Text('issued at: ${auth.issuedAtTime}'),
+          Text('signin provider: ${auth.signInProvider}'),
         ],
       );
 
@@ -258,15 +278,15 @@ Future<List<String>> dialogBox({
     builder: (BuildContext context) {
       return CustomAlertDialog(
         key: key,
-        title: "Email & Password",
+        title: 'Email & Password',
       );
     },
   );
 }
 
 class CustomAlertDialog extends StatefulWidget {
-  final String title;
   const CustomAlertDialog({Key key, this.title}) : super(key: key);
+  final String title;
 
   @override
   CustomAlertDialogState createState() => CustomAlertDialogState();
@@ -281,112 +301,112 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: AlertDialog(
-        title: Text(widget.title),
-        elevation: 20.0,
-        content: SingleChildScrollView(
-          child: Form(
-            key: _resetKey,
-            autovalidate: _resetValidate,
-            child: ListBody(
-              children: <Widget>[
-                const Text(
-                  "Email Address & Password.",
-                  style: const TextStyle(fontSize: 14.0),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                ),
-                Column(
-                  children: <Widget>[
-                    Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: const Icon(
-                          Icons.email,
-                          size: 20.0,
-                        ),
+    return AlertDialog(
+      title: Text(widget.title),
+      elevation: 20,
+      content: SingleChildScrollView(
+        child: Form(
+          key: _resetKey,
+          autovalidateMode: _resetValidate
+              ? AutovalidateMode.always
+              : AutovalidateMode.disabled,
+          child: ListBody(
+            children: <Widget>[
+              const Text(
+                'Email Address & Password.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(10),
+              ),
+              Column(
+                children: <Widget>[
+                  Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: Icon(
+                        Icons.email,
+                        size: 20,
                       ),
-                      SizedBox(
-                        width: 250,
-                        child: TextFormField(
-                          validator: validateEmail,
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          autofocus: true,
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Email',
-                              contentPadding:
-                                  const EdgeInsets.only(left: 70.0, top: 15.0),
-                              hintStyle: const TextStyle(
-                                  color: Colors.black, fontSize: 14.0)),
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                      )
-                    ]),
+                    ),
                     SizedBox(
-                      width: 200,
+                      width: 250,
                       child: TextFormField(
-                        validator: (String value) {
-                          if (value.length == 0 || value.isEmpty)
-                            return "Password required.";
-                          return null;
-                        },
-                        keyboardType: TextInputType.text,
-                        controller: _passwordController,
-                        obscureText:
-                            _hidePassword, //This will obscure text dynamically
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          hintText: 'Enter your password',
-                          // Here is key idea
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              // Based on passwordVisible state choose the icon
-                              _hidePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: Theme.of(context).primaryColorDark,
-                            ),
-                            onPressed: () {
-                              // Update the state i.e. toogle the state of passwordVisible variable
-                              setState(() {
-                                _hidePassword = !_hidePassword;
-                              });
-                            },
+                        validator: validateEmail,
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Email',
+                            contentPadding: EdgeInsets.only(left: 70, top: 15),
+                            hintStyle:
+                                TextStyle(color: Colors.black, fontSize: 14)),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    )
+                  ]),
+                  SizedBox(
+                    width: 200,
+                    child: TextFormField(
+                      validator: (String value) {
+                        if (value.isEmpty) {
+                          return 'Password required.';
+                        }
+                        return null;
+                      },
+                      keyboardType: TextInputType.text,
+                      controller: _passwordController,
+                      obscureText:
+                          _hidePassword, //This will obscure text dynamically
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        hintText: 'Enter your password',
+                        // Here is key idea
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            // Based on passwordVisible state choose the icon
+                            _hidePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Theme.of(context).primaryColorDark,
                           ),
+                          onPressed: () {
+                            // Update the state i.e. google the state of passwordVisible variable
+                            setState(() {
+                              _hidePassword = !_hidePassword;
+                            });
+                          },
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        actions: <Widget>[
-          FlatButton(
-            child: const Text(
-              'CANCEL',
-              style: const TextStyle(color: Colors.black),
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          FlatButton(
-            child: const Text(
-              'SEND EMAIL',
-              style: const TextStyle(color: Colors.black),
-            ),
-            onPressed: () {
-              _onPressed();
-            },
-          ),
-        ],
       ),
+      actions: <Widget>[
+        FlatButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text(
+            'CANCEL',
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+        FlatButton(
+          onPressed: () {
+            _onPressed();
+          },
+          child: const Text(
+            'SEND EMAIL',
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+      ],
     );
   }
 
@@ -408,13 +428,13 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
 }
 
 String validateEmail(String value) {
-  String pattern =
+  const String pattern =
       r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-  RegExp regExp = RegExp(pattern);
-  if (value.length == 0) {
-    return "Email is required";
+  final RegExp regExp = RegExp(pattern);
+  if (value.isEmpty) {
+    return 'Email is required';
   } else if (!regExp.hasMatch(value)) {
-    return "Invalid Email";
+    return 'Invalid Email';
   } else {
     return null;
   }
