@@ -21,10 +21,10 @@ void main() => runApp(
 class SignInDemo extends StatefulWidget {
   const SignInDemo({Key key}) : super(key: key);
   @override
-  State createState() => SignInDemoState();
+  State createState() => _SignInDemoState();
 }
 
-class SignInDemoState extends State<SignInDemo>
+class _SignInDemoState extends State<SignInDemo>
     with SingleTickerProviderStateMixin {
   Auth auth;
   bool loggedIn = false;
@@ -169,9 +169,9 @@ class SignInDemoState extends State<SignInDemo>
             onPressed: () {
               auth
                   .signInWithTwitter(
-                      key: 'ab1cefgh23KlmnOpQ4STUVWx4',
+                      key: 'ab1cefgh23KlmnOpQ4STUVWx5',
                       secret:
-                          'ab1cefgh23KlmnOpQ4STUVWx4y6ZabCDe7ghi8jKLMnOP9qRst')
+                          'ab1cefgh23KlmnOpQ4STUVWx5y6ZabCDe7ghi8jKLMnOP9qRst')
                   .then((signIn) => signInFunc(signIn: signIn))
                   .catchError((Object err) {
                 if (err is! Exception) {
@@ -212,7 +212,7 @@ class SignInDemoState extends State<SignInDemo>
           ),
           RaisedButton(
             onPressed: () async {
-              final List<String> ep = await dialogBox(context: context);
+              final ep = await dialogBox(context: context);
               if (ep == null || ep.isEmpty) {
                 return;
               }
@@ -289,10 +289,10 @@ class CustomAlertDialog extends StatefulWidget {
   final String title;
 
   @override
-  CustomAlertDialogState createState() => CustomAlertDialogState();
+  _CustomAlertDialogState createState() => _CustomAlertDialogState();
 }
 
-class CustomAlertDialogState extends State<CustomAlertDialog> {
+class _CustomAlertDialogState extends State<CustomAlertDialog> {
   final _resetKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -411,7 +411,7 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
   }
 
   void _onPressed() {
-    bool valid = true;
+    var valid = true;
 
     if (!_resetKey.currentState.validate()) {
       valid = false;
@@ -428,9 +428,9 @@ class CustomAlertDialogState extends State<CustomAlertDialog> {
 }
 
 String validateEmail(String value) {
-  const String pattern =
+  const pattern =
       r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-  final RegExp regExp = RegExp(pattern);
+  final regExp = RegExp(pattern);
   if (value.isEmpty) {
     return 'Email is required';
   } else if (!regExp.hasMatch(value)) {

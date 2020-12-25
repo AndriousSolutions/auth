@@ -16,13 +16,20 @@ dependencies:
   # https://pub.dartlang.org/packages/google_sign_in
   google_sign_in: ^4.0.0
 
+  # https://pub.dev/packages/remote_config
+  remote_config: ^1.2.0
+
   cupertino_icons: ^0.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-
+  # Setting up Lint Rules
+  # Most of the recommended lints directly implement the guidelines set out in Effective Dart:
+  # https://dart.dev/guides/language/effective-dart
+  # https://pub.dev/packages/pedantic
+  pedantic: ^1.0.0
 
 
 # The following section is specific to Flutter.

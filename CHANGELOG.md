@@ -1,3 +1,7 @@
+## 7.3.1
+ December 25, 2020
+- Updated flutter_login_facebook: 0.4.2
+
 ## 7.3.0
  November 26, 2020
 - Updated flutter_login_facebook ^0.2.0

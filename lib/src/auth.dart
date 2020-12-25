@@ -39,7 +39,7 @@ import 'package:flutter/material.dart' show required;
 import 'package:flutter_login_facebook/flutter_login_facebook.dart';
 import 'package:flutter_twitter/flutter_twitter.dart';
 import 'package:google_sign_in/google_sign_in.dart'
-    show GoogleSignIn, GoogleSignInAccount, GoogleSignInAuthentication;
+    show GoogleSignIn, GoogleSignInAccount;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
     show SignInOption;
 
@@ -254,7 +254,7 @@ class Auth {
   ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
   ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
   Future<bool> delete() async {
-    bool delete = false;
+    var delete = false;
     if (_user != null) {
       try {
         await _user.delete();
@@ -312,7 +312,7 @@ class Auth {
 
   /// Get the last error but clear it.
   Exception getError() {
-    final Exception e = _ex;
+    final e = _ex;
     _ex = null;
     return e;
   }
@@ -406,7 +406,7 @@ class Auth {
 
   /// Add a Firebase Listener
   bool addListener(FireBaseListener f) {
-    bool add = f != null;
+    var add = f != null;
     if (add) {
       add = _fireBaseListeners.add(f);
     }
@@ -418,7 +418,7 @@ class Auth {
 
   /// Add a Google listener
   bool addListen(GoogleListener f) {
-    bool add = f != null;
+    var add = f != null;
     if (add) {
       add = _googleListeners.add(f);
     }
@@ -430,7 +430,7 @@ class Auth {
     bool loggedIn;
     loggedIn = _user?.uid?.isNotEmpty ?? false;
     if (!loggedIn) {
-      final User user = currentUser();
+      final user = currentUser();
       loggedIn = user?.uid?.isNotEmpty ?? false;
     }
     return loggedIn;
@@ -607,7 +607,7 @@ class Auth {
     void Function(GoogleSignInAccount user) listen,
     bool suppressErrors = true,
   }) async {
-    bool logIn = alreadyLoggedIn();
+    var logIn = alreadyLoggedIn();
 
     // Logged in but add the listener anyway.
     if (logIn) {
@@ -661,7 +661,7 @@ class Auth {
     await _initListen(listen: listen);
 
     // Attempt to get the currently authenticated user
-    GoogleSignInAccount currentUser = _mobGoogleSignIn?.currentUser;
+    var currentUser = _mobGoogleSignIn?.currentUser;
 
     if (currentUser == null) {
       try {
@@ -694,7 +694,7 @@ class Auth {
     await _initListen(listen: listen);
 
     // Attempt to get the currently authenticated user
-    GoogleSignInAccount currentUser = _mobGoogleSignIn.currentUser;
+    var currentUser = _mobGoogleSignIn.currentUser;
 
     if (currentUser == null) {
       try {
@@ -720,7 +720,7 @@ class Auth {
     bool firebaseUser = true,
   }) async {
     /// Attempt to sign in without user interaction
-    bool logIn = await signInWithGoogleSilently(listen: listen);
+    var logIn = await signInWithGoogleSilently(listen: listen);
 
     if (!logIn) {
       /// Force the user to interactively sign in
@@ -768,7 +768,7 @@ class Auth {
     try {
       user = await _modAuth.signInWithCredential(credential).then((result) {
         _result = result;
-        final User usr = _result?.user;
+        final usr = _result?.user;
         // Assign to the variable, user
         return usr;
       }).catchError((Object ex) {
@@ -779,7 +779,7 @@ class Auth {
       setError(ex);
       _result = null;
     }
-    final bool signIn = await _setUserFromFireBase(user);
+    final signIn = await _setUserFromFireBase(user);
     return signIn;
   }
 
@@ -819,7 +819,7 @@ class Auth {
     try {
       user = await _modAuth.signInWithCustomToken(token).then((result) {
         _result = result;
-        final User usr = _result?.user;
+        final usr = _result?.user;
         return usr;
       }).catchError((Object ex) {
         setError(ex);
@@ -871,7 +871,7 @@ class Auth {
           .signInWithEmailAndPassword(email: email, password: password)
           .then((result) {
         _result = result;
-        final User usr = _result?.user;
+        final usr = _result?.user;
         return usr;
       }).catchError((Object ex) {
         setError(ex);
@@ -911,7 +911,7 @@ class Auth {
           .createUserWithEmailAndPassword(email: email, password: password)
           .then((result) {
         _result = result;
-        final User usr = _result.user;
+        final usr = _result.user;
         return usr;
       });
     } catch (ex) {
@@ -1006,13 +1006,13 @@ class Auth {
       try {
         result = await _facebookLogin.logIn(permissions: permissions);
 
-        if (result.status == FacebookLoginStatus.Success) {
+        if (result.status == FacebookLoginStatus.success) {
           //
           token = result?.accessToken?.token ?? '';
-        } else if (result.status == FacebookLoginStatus.Cancel) {
+        } else if (result.status == FacebookLoginStatus.cancel) {
           //
           token = '';
-        } else if (result.status == FacebookLoginStatus.Error) {
+        } else if (result.status == FacebookLoginStatus.error) {
           //
           token = '';
           setError(Exception(result.error.developerMessage));
@@ -1024,7 +1024,7 @@ class Auth {
       }
     }
 
-    bool signIn = false;
+    var signIn = false;
 
     if (token.isNotEmpty) {
       // No need this is done in signInWithCredential
@@ -1042,7 +1042,7 @@ class Auth {
     void Function(User user) listener,
   }) async {
     /// Attempt to sign in without user interaction
-    bool logIn = await signInWithFacebookSilently(
+    var logIn = await signInWithFacebookSilently(
       permissions: permissions,
       listener: listener,
     );
@@ -1097,8 +1097,8 @@ class Auth {
     }
 
     String token;
-    String tokenSecret = '';
-    bool signIn = false;
+    var tokenSecret = '';
+    var signIn = false;
     bool inSession;
 
     // Disconnect from Twitter first if logged in.
@@ -1174,7 +1174,7 @@ class Auth {
     void Function(User user) listener,
   }) async {
     /// Attempt to sign in without user interaction
-    bool logIn = await signInWithTwitterSilently(
+    var logIn = await signInWithTwitterSilently(
       key: key,
       secret: secret,
       listener: listener,
@@ -1401,7 +1401,7 @@ class Auth {
   // firebaseUser = true will check if logged in Firebase
   Future<bool> _setFireBaseUserFromGoogle(
       GoogleSignInAccount googleUser) async {
-    final GoogleSignInAuthentication auth = await googleUser?.authentication;
+    final auth = await googleUser?.authentication;
 
     User user;
     UserCredential result;
