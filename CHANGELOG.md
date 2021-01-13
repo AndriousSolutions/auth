@@ -1,3 +1,9 @@
+## 7.3.2
+ January 13, 2021
+- sdk: '>=2.10.0 <3.0.0'
+- firebase_core: '>=0.7.0'
+- firebase_auth: '>=0.20.0'
+
 ## 7.3.1
  December 25, 2020
 - Updated flutter_login_facebook: 0.4.2

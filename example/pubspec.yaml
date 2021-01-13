@@ -4,7 +4,7 @@ description: A new Flutter project.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.10.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -17,9 +17,9 @@ dependencies:
   google_sign_in: ^4.0.0
 
   # https://pub.dev/packages/remote_config
-  remote_config: ^1.2.0
+  remote_config: ^1.0.0
 
-  cupertino_icons: ^0.1.2
+  cupertino_icons: ^1.0.0
 
 dev_dependencies:
   flutter_test:
