@@ -1,3 +1,13 @@
+
+## 7.4.0
+ March 21, 2021
+- firebase_core: ^1.0.0
+- firebase_auth: ^1.0.0
+- google_sign_in: ^5.0.0
+- google_sign_in_platform_interface: ^2.0.0
+- flutter_login_facebook: ^1.0.0
+- flutter_twitter: ^1.0.0
+
 ## 7.3.2+2
  January 13, 2021
 - sdk: '>=2.10.0 <3.0.0'
