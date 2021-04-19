@@ -21,7 +21,7 @@ And so, in this case, add this to your package's pubspec.yaml file instead:
 
 ```yaml
 dependencies:
-  auth:^7.0.0
+  auth:^8.0.0
 ```
 
 For more information on this topic, read the article, [The importance of semantic versioning](https://medium.com/@xabaras/the-importance-of-semantic-versioning-9b78e8e59bba).

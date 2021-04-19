@@ -19,16 +19,16 @@ void main() => runApp(
     );
 
 class SignInDemo extends StatefulWidget {
-  const SignInDemo({Key key}) : super(key: key);
+  const SignInDemo({Key? key}) : super(key: key);
   @override
   State createState() => _SignInDemoState();
 }
 
 class _SignInDemoState extends State<SignInDemo>
     with SingleTickerProviderStateMixin {
-  Auth auth;
+  late Auth auth;
   bool loggedIn = false;
-  TabController tabController;
+  late TabController tabController;
   String errorMessage = '';
 
   @override
@@ -107,7 +107,7 @@ class _SignInDemoState extends State<SignInDemo>
           ListTile(
             leading: auth.signedInGoogle()
                 ? GoogleUserCircleAvatar(
-                    identity: auth.googleUser,
+                    identity: auth.googleUser!,
                   )
                 : const Text(''),
             title: Text(auth.displayName),
@@ -115,19 +115,19 @@ class _SignInDemoState extends State<SignInDemo>
           ),
           const Text('Signed in successfully.'),
           signInErrorMsg,
-          RaisedButton(
+          ElevatedButton(
             onPressed: () {
               auth.signOut();
             },
             child: const Text('Sign Out of Firebase'),
           ),
-          RaisedButton(
+          ElevatedButton(
             onPressed: () {
               auth.disconnect();
             },
             child: const Text('Sign Out & Disconnect'),
           ),
-          RaisedButton(
+          ElevatedButton(
             onPressed: () {
               SystemChannels.platform.invokeMethod('SystemNavigator.pop');
             },
@@ -136,27 +136,16 @@ class _SignInDemoState extends State<SignInDemo>
         ],
       );
     } else {
-      // This function is called by every RaisedButton widget.
-      void signInFunc({bool signIn}) {
-        if (signIn) {
-          errorMessage = '';
-        } else {
-          errorMessage = auth.message;
-        }
-        setState(() {});
-      }
-
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
           const Text('You are not currently signed in.'),
           signInErrorMsg,
-          RaisedButton(
+          ElevatedButton(
             onPressed: () {
-              auth
-                  .signInWithFacebook()
-                  .then((signIn) => signInFunc(signIn: signIn))
-                  .catchError((Object err) {
+              auth.signInWithFacebook().then((signIn) {
+                return signInFunc(signIn: signIn);
+              }).catchError((Object err) {
                 if (err is! Exception) {
                   err = err.toString();
                 }
@@ -165,7 +154,7 @@ class _SignInDemoState extends State<SignInDemo>
             },
             child: const Text('Sign In With Facebook'),
           ),
-          RaisedButton(
+          ElevatedButton(
             onPressed: () {
               auth
                   .signInWithTwitter(
@@ -182,7 +171,7 @@ class _SignInDemoState extends State<SignInDemo>
             },
             child: const Text('Sign In With Twitter'),
           ),
-          RaisedButton(
+          ElevatedButton(
             onPressed: () {
               auth
                   .signInWithGoogle()
@@ -196,7 +185,7 @@ class _SignInDemoState extends State<SignInDemo>
             },
             child: const Text('Sign In With Google'),
           ),
-          RaisedButton(
+          ElevatedButton(
             onPressed: () {
               auth
                   .signInAnonymously()
@@ -210,7 +199,7 @@ class _SignInDemoState extends State<SignInDemo>
             },
             child: const Text('Log in anonymously'),
           ),
-          RaisedButton(
+          ElevatedButton(
             onPressed: () async {
               final ep = await dialogBox(context: context);
               if (ep == null || ep.isEmpty) {
@@ -231,6 +220,16 @@ class _SignInDemoState extends State<SignInDemo>
         ],
       );
     }
+  }
+
+  // This function is called by every RaisedButton widget.
+  void signInFunc({required bool signIn}) {
+    if (signIn) {
+      errorMessage = '';
+    } else {
+      errorMessage = auth.message;
+    }
+    setState(() {});
   }
 
   Widget get _authResults => ListView(
@@ -267,9 +266,9 @@ class _SignInDemoState extends State<SignInDemo>
 }
 
 // Creates an alertDialog for the user to enter their email
-Future<List<String>> dialogBox({
-  Key key,
-  @required BuildContext context,
+Future<List<String>?> dialogBox({
+  Key? key,
+  required BuildContext context,
   bool barrierDismissible = false,
 }) {
   return showDialog<List<String>>(
@@ -277,7 +276,7 @@ Future<List<String>> dialogBox({
     barrierDismissible: barrierDismissible, // user must tap button!
     builder: (BuildContext context) {
       return CustomAlertDialog(
-        key: key,
+        key: key!,
         title: 'Email & Password',
       );
     },
@@ -285,7 +284,7 @@ Future<List<String>> dialogBox({
 }
 
 class CustomAlertDialog extends StatefulWidget {
-  const CustomAlertDialog({Key key, this.title}) : super(key: key);
+  const CustomAlertDialog({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
@@ -349,8 +348,8 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
                   SizedBox(
                     width: 200,
                     child: TextFormField(
-                      validator: (String value) {
-                        if (value.isEmpty) {
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
                           return 'Password required.';
                         }
                         return null;
@@ -388,7 +387,7 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
         ),
       ),
       actions: <Widget>[
-        FlatButton(
+        TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -397,7 +396,7 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
             style: TextStyle(color: Colors.black),
           ),
         ),
-        FlatButton(
+        TextButton(
           onPressed: () {
             _onPressed();
           },
@@ -413,7 +412,7 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
   void _onPressed() {
     var valid = true;
 
-    if (!_resetKey.currentState.validate()) {
+    if (_resetKey.currentState == null || !_resetKey.currentState!.validate()) {
       valid = false;
     }
 
@@ -427,7 +426,10 @@ class _CustomAlertDialogState extends State<CustomAlertDialog> {
   }
 }
 
-String validateEmail(String value) {
+String? validateEmail(String? value) {
+  if (value == null) {
+    return null;
+  }
   const pattern =
       r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
   final regExp = RegExp(pattern);
@@ -435,7 +437,5 @@ String validateEmail(String value) {
     return 'Email is required';
   } else if (!regExp.hasMatch(value)) {
     return 'Invalid Email';
-  } else {
-    return null;
   }
 }

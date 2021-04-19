@@ -1,4 +1,9 @@
 
+## 8.0.0-pre  A pre-release
+ April 18, 2021
+- Null Safety
+- twitter_login: ^3.0.0
+
 ## 7.4.0
  March 21, 2021
 - firebase_core: ^1.0.0

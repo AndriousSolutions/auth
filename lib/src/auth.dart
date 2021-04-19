@@ -30,35 +30,37 @@ import 'package:firebase_auth/firebase_auth.dart'
         AuthCredential,
         FirebaseAuth,
         FacebookAuthProvider,
+        PhoneAuthCredential,
         User,
         IdTokenResult,
         GoogleAuthProvider,
         TwitterAuthProvider,
         UserInfo;
-import 'package:flutter/material.dart' show required;
 import 'package:flutter_login_facebook/flutter_login_facebook.dart';
-import 'package:flutter_twitter/flutter_twitter.dart';
+import 'package:twitter_login/twitter_login.dart';
+import 'package:twitter_login/entity/auth_result.dart';
+
 import 'package:google_sign_in/google_sign_in.dart'
-    show GoogleSignIn, GoogleSignInAccount;
+    show GoogleSignInAuthentication, GoogleSignIn, GoogleSignInAccount;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
     show SignInOption;
 
 export 'package:flutter_login_facebook/flutter_login_facebook.dart';
 
-typedef FireBaseListener = void Function(User user);
+typedef FireBaseListener = void Function(User? user);
 typedef FirebaseUser = Future<User> Function();
-typedef GoogleListener = void Function(GoogleSignInAccount event);
+typedef GoogleListener = void Function(GoogleSignInAccount? event);
 
 class Auth {
   factory Auth({
     SignInOption signInOption = SignInOption.standard,
     List<String> scopes = const <String>[],
-    String hostedDomain,
-    void Function(GoogleSignInAccount account) listen,
-    void Function(User user) listener,
-    List<FacebookPermission> permissions,
-    String key,
-    String secret,
+    String? hostedDomain,
+    void Function(GoogleSignInAccount? account)? listen,
+    void Function(User? user)? listener,
+    List<FacebookPermission>? permissions,
+    String? key,
+    String? secret,
   }) =>
       _this ??= Auth._(
         signInOption: signInOption,
@@ -72,16 +74,16 @@ class Auth {
       );
 
   Auth._({
-    SignInOption signInOption,
-    List<String> scopes,
-    String hostedDomain,
-    void Function(GoogleSignInAccount account) listen,
-    void Function(User user) listener,
-    List<FacebookPermission> permissions,
-    String key,
-    String secret,
+    SignInOption? signInOption,
+    List<String>? scopes,
+    String? hostedDomain,
+    void Function(GoogleSignInAccount? account)? listen,
+    void Function(User? user)? listener,
+    List<FacebookPermission>? permissions,
+    String? key,
+    String? secret,
   }) {
-    _fireBaseListeners = <FireBaseListener>{};
+    _fireBaseListeners = <FireBaseListener?>{};
     _firebaseRunning = false;
 
     _googleListeners = <GoogleListener>{};
@@ -93,8 +95,8 @@ class Auth {
 
     if (_mobGoogleSignIn == null) {
       _mobGoogleSignIn = GoogleSignIn(
-          signInOption: signInOption,
-          scopes: scopes,
+          signInOption: signInOption!,
+          scopes: scopes!,
           hostedDomain: hostedDomain);
       // Store in an instance variable
       _googleIn = _mobGoogleSignIn;
@@ -117,35 +119,35 @@ class Auth {
     }
   }
 
-  static Auth _this;
-  static FirebaseAuth _modAuth;
-  static GoogleSignIn _mobGoogleSignIn;
+  static Auth? _this;
+  static FirebaseAuth? _modAuth;
+  static GoogleSignIn? _mobGoogleSignIn;
 
-  StreamSubscription<User> _firebaseListener;
-  StreamSubscription<GoogleSignInAccount> _googleListener;
+  StreamSubscription<User?>? _firebaseListener;
+  StreamSubscription<GoogleSignInAccount?>? _googleListener;
 
-  GoogleSignIn _googleIn;
-  FirebaseAuth _fbAuth;
-  FacebookLogin _facebookLogin;
-  TwitterLogin _twitterLogin;
+  GoogleSignIn? _googleIn;
+  FirebaseAuth? _fbAuth;
+  FacebookLogin? _facebookLogin;
+  TwitterLogin? _twitterLogin;
 
-  String _key;
-  String _secret;
+  String? _key;
+  String? _secret;
 
-  Set<FireBaseListener> _fireBaseListeners;
-  bool _firebaseRunning;
+  Set<FireBaseListener?>? _fireBaseListeners;
+  late bool _firebaseRunning;
 
-  Set<GoogleListener> _googleListeners;
-  bool _googleRunning;
+  Set<GoogleListener>? _googleListeners;
+  late bool _googleRunning;
 
-  List<Exception> _eventErrors;
+  List<Exception>? _eventErrors;
 
   /// Facebook Login List of permissions.
   List<FacebookPermission> get permissions => _permissions;
   final List<FacebookPermission> _permissions = [];
 
   String get accessToken => _accessToken ?? '';
-  String _accessToken = '';
+  String? _accessToken = '';
 
   DateTime get authTime => _idTokenResult?.authTime ?? DateTime.now();
 
@@ -157,28 +159,28 @@ class Auth {
   String get email => _email;
   String _email = '';
 
-  bool get eventErrors => _eventErrors.isNotEmpty;
+  bool get eventErrors => _eventErrors!.isNotEmpty;
 
   @Deprecated('Use getError() instead.')
-  Exception get ex => _ex;
-  Exception _ex;
+  Exception? get ex => _ex;
+  Exception? _ex;
 
   DateTime get expirationTime =>
       _idTokenResult?.expirationTime ?? DateTime.now();
 
 //  @Deprecated('No access to Firebase Auth')
-  FirebaseAuth get firebaseAuth => _fbAuth;
+  FirebaseAuth? get firebaseAuth => _fbAuth;
 
-  GoogleSignIn get googleSignIn => _googleIn;
+  GoogleSignIn? get googleSignIn => _googleIn;
 
   /// The currently signed in account, or null if the user is signed out.
-  GoogleSignInAccount get googleUser => _mobGoogleSignIn?.currentUser;
+  GoogleSignInAccount? get googleUser => _mobGoogleSignIn?.currentUser;
 
   String get idToken => _idToken ?? '';
-  String _idToken;
+  String? _idToken;
 
-  IdTokenResult get idTokenResult => _idTokenResult;
-  IdTokenResult _idTokenResult;
+  IdTokenResult? get idTokenResult => _idTokenResult;
+  IdTokenResult? _idTokenResult;
 
   bool get isAnonymous => _isAnonymous;
   bool _isAnonymous = false;
@@ -202,19 +204,19 @@ class Auth {
   String get photoUrl => _photoUrl;
   String _photoUrl = '';
 
-  UserCredential get result => _result;
+  UserCredential? get result => _result;
 
   String get signInProvider => _idTokenResult?.signInProvider ?? '';
 
   String get uid => _uid;
   String _uid = '';
 
-  User get user => _user;
-  User _user;
+  User? get user => _user;
+  User? _user;
 
-  UserCredential _result;
+  UserCredential? _result;
 
-  AdditionalUserInfo get userInfo => _result?.additionalUserInfo;
+  AdditionalUserInfo? get userInfo => _result?.additionalUserInfo;
 
   String get username => _result?.additionalUserInfo?.username ?? '';
 
@@ -222,21 +224,21 @@ class Auth {
 
   String get providerId => _result?.additionalUserInfo?.providerId ?? '';
 
-  bool alreadyLoggedIn([GoogleSignInAccount googleUser]) {
-    User fireBaseUser;
+  bool alreadyLoggedIn([GoogleSignInAccount? googleUser]) {
+    User? fireBaseUser;
     if (_modAuth != null) {
-      fireBaseUser = _modAuth.currentUser;
+      fireBaseUser = _modAuth!.currentUser;
     }
     return _user != null &&
         fireBaseUser != null &&
-        _user.uid == fireBaseUser.uid &&
+        _user!.uid == fireBaseUser.uid &&
         (googleUser == null ||
-            googleUser.id == fireBaseUser?.providerData[1]?.uid);
+            googleUser.id == fireBaseUser.providerData[1].uid);
   }
 
   /// Returns the currently signed-in [User] or null if there is none.
-  User currentUser() {
-    User user;
+  User? currentUser() {
+    User? user;
     try {
       user = _modAuth?.currentUser;
     } catch (ex) {
@@ -257,7 +259,7 @@ class Auth {
     var delete = false;
     if (_user != null) {
       try {
-        await _user.delete();
+        await _user!.delete();
         delete = true;
       } catch (ex) {
         setError(ex);
@@ -292,10 +294,10 @@ class Auth {
   /// Errors:
   ///   • `ERROR_INVALID_CREDENTIAL` - If the [email] address is malformed.
   ///   • `ERROR_USER_NOT_FOUND` - If there is no user corresponding to the given [email] address.
-  Future<List<String>> fetchSignInMethodsForEmail({
-    @required String email,
+  Future<List<String>?> fetchSignInMethodsForEmail({
+    required String email,
   }) async {
-    List<String> providers;
+    List<String>? providers;
 
     try {
       providers = await _modAuth?.fetchSignInMethodsForEmail(email);
@@ -311,7 +313,7 @@ class Auth {
   bool get inError => _ex != null;
 
   /// Get the last error but clear it.
-  Exception getError() {
+  Exception? getError() {
     final e = _ex;
     _ex = null;
     return e;
@@ -328,7 +330,7 @@ class Auth {
       switch (ex.code) {
         case 'network_error':
           // The device's Internet is turned off.
-          if (ex.message.contains('7:')) {
+          if (ex.message!.contains('7:')) {
             _ex = Exception('Turn on your Wifi or Data.\r ${ex.toString()}');
           }
           break;
@@ -336,7 +338,7 @@ class Auth {
     }
   }
 
-  List<Exception> getEventError() {
+  List<Exception>? getEventError() {
     final errors = _eventErrors;
     _eventErrors = null;
     return errors;
@@ -346,11 +348,11 @@ class Auth {
   /// mechanism.
   ///
   /// A FirebaseAuthException may be thrown
-  Future<void> applyActionCode(String code) {
+  Future<void> applyActionCode(String? code) {
     if (code == null || code.isEmpty) {
       return Future.value();
     }
-    return _modAuth.applyActionCode(code);
+    return _modAuth!.applyActionCode(code);
   }
 
   /// Checks a verification code sent to the user by email or other out-of-band
@@ -359,11 +361,11 @@ class Auth {
   /// Returns [ActionCodeInfo] about the code.
   ///
   /// A FirebaseAuthException may be thrown:
-  Future<ActionCodeInfo> checkActionCode(String code) {
+  Future<ActionCodeInfo> checkActionCode(String? code) {
     if (code == null || code.isEmpty) {
       return Future.value();
     }
-    return _modAuth.checkActionCode(code);
+    return _modAuth!.checkActionCode(code);
   }
 
   /// Obtains the id token result for the current user, forcing a [refresh] if desired.
@@ -373,8 +375,8 @@ class Auth {
   /// integrity and validity of this token.
   ///
   /// Completes with an error if the user is signed out.
-  Future<IdTokenResult> getIdToken({bool refresh = false}) async {
-    IdTokenResult result;
+  Future<IdTokenResult?> getIdToken({bool refresh = false}) async {
+    IdTokenResult? result;
     try {
       result = await _user?.getIdTokenResult(refresh);
     } catch (ex) {
@@ -386,17 +388,17 @@ class Auth {
 
   /// Notifies about changes to the user's sign-in state (such as sign-in or
   /// sign-out) and also token refresh events.
-  Stream<User> idTokenChanges() => _modAuth.idTokenChanges();
+  Stream<User?> idTokenChanges() => _modAuth!.idTokenChanges();
 
   /// Notifies about changes to any user updates.
   ///
-  Stream<User> userChanges() => _modAuth.userChanges();
+  Stream<User?> userChanges() => _modAuth!.userChanges();
 
   /// Updates the current instance with the provided settings.
   ///
   Future<void> setSettings(
-          {bool appVerificationDisabledForTesting, String userAccessGroup}) =>
-      _modAuth.setSettings(
+          {bool? appVerificationDisabledForTesting, String? userAccessGroup}) =>
+      _modAuth!.setSettings(
         appVerificationDisabledForTesting: appVerificationDisabledForTesting,
         userAccessGroup: userAccessGroup,
       );
@@ -405,10 +407,10 @@ class Auth {
   bool fireBaseListener(FireBaseListener f) => addListener(f);
 
   /// Add a Firebase Listener
-  bool addListener(FireBaseListener f) {
+  bool addListener(FireBaseListener? f) {
     var add = f != null;
     if (add) {
-      add = _fireBaseListeners.add(f);
+      add = _fireBaseListeners!.add(f);
     }
     return add;
   }
@@ -417,10 +419,10 @@ class Auth {
   bool googleListener(GoogleListener f) => addListen(f);
 
   /// Add a Google listener
-  bool addListen(GoogleListener f) {
+  bool addListen(GoogleListener? f) {
     var add = f != null;
     if (add) {
-      add = _googleListeners.add(f);
+      add = _googleListeners!.add(f!);
     }
     return add;
   }
@@ -428,10 +430,10 @@ class Auth {
   /// FireBase Logged in.
   bool isLoggedIn() {
     bool loggedIn;
-    loggedIn = _user?.uid?.isNotEmpty ?? false;
+    loggedIn = _user?.uid.isNotEmpty ?? false;
     if (!loggedIn) {
       final user = currentUser();
-      loggedIn = user?.uid?.isNotEmpty ?? false;
+      loggedIn = user?.uid.isNotEmpty ?? false;
     }
     return loggedIn;
   }
@@ -469,7 +471,7 @@ class Auth {
   ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that this type of account is not enabled.
   ///   • `ERROR_INVALID_ACTION_CODE` - If the action code in the link is malformed, expired, or has already been used.
   ///       This can only occur when using [EmailAuthProvider.getCredentialWithLink] to obtain the credential.
-  Future<UserCredential> linkWithCredential(AuthCredential credential) async {
+  Future<UserCredential?> linkWithCredential(AuthCredential credential) async {
     try {
       _result = await _user?.linkWithCredential(credential);
     } catch (ex) {
@@ -495,7 +497,7 @@ class Auth {
   ///   • `ERROR_USER_DISABLED` - If the user has been disabled (for example, in the Firebase console)
   ///   • `ERROR_USER_NOT_FOUND` - If the user has been deleted (for example, in the Firebase console)
   ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Email & Password accounts are not enabled.
-  Future<UserCredential> reauthenticateWithCredential(
+  Future<UserCredential?> reauthenticateWithCredential(
       AuthCredential credential) async {
     try {
       _result = await _user?.reauthenticateWithCredential(credential);
@@ -516,9 +518,9 @@ class Auth {
     }
   }
 
-  void removeListen(GoogleListener f) => _googleListeners.remove(f);
+  void removeListen(GoogleListener f) => _googleListeners!.remove(f);
 
-  void removeListener(FireBaseListener f) => _fireBaseListeners.remove(f);
+  void removeListener(FireBaseListener f) => _fireBaseListeners!.remove(f);
 
   /// Initiates email verification for the user.
   Future<void> sendEmailVerification() async {
@@ -537,7 +539,7 @@ class Auth {
   ///   • `ERROR_INVALID_EMAIL` - If the [email] address is malformed.
   ///   • `ERROR_USER_NOT_FOUND` - If there is no user corresponding to the given [email] address.
   Future<bool> sendPasswordResetEmail({
-    @required String email,
+    required String email,
   }) async {
     bool reset;
     try {
@@ -555,7 +557,7 @@ class Auth {
   /// code should follow the conventions defined by the IETF in BCP47.
   Future<void> setLanguageCode(String language) async {
     try {
-      await _modAuth.setLanguageCode(language).catchError(setError);
+      await _modAuth!.setLanguageCode(language).catchError(setError);
     } catch (ex) {
       setError(ex);
     }
@@ -573,7 +575,7 @@ class Auth {
   /// Errors:
   ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Anonymous accounts are not enabled.
   Future<bool> signInAnonymously({
-    void Function(User user) listener,
+    void Function(User? user)? listener,
   }) async {
     // Logged in but add the listener anyway.
     addListener(listener);
@@ -584,9 +586,9 @@ class Auth {
     }
     await _initFireBase(listener: listener);
 
-    User user;
+    User? user;
     try {
-      _result = await _modAuth.signInAnonymously();
+      _result = await _modAuth!.signInAnonymously();
       user = _result?.user;
     } catch (ex) {
       setError(ex);
@@ -595,16 +597,16 @@ class Auth {
     }
     // The listener will call _setUserFromFireBase(user)
     // Must return null until 'awaits' are completed. -gp
-    return user?.uid?.isNotEmpty ?? false;
+    return user?.uid.isNotEmpty ?? false;
   }
 
   /// Attempt to sign in with one of the 'online' accounts:
   /// Google, Facebook and Twitter.
   Future<bool> signInSilently({
-    String key,
-    String secret,
-    void Function(User user) listener,
-    void Function(GoogleSignInAccount user) listen,
+    String? key,
+    String? secret,
+    void Function(User? user)? listener,
+    void Function(GoogleSignInAccount? user)? listen,
     bool suppressErrors = true,
   }) async {
     var logIn = alreadyLoggedIn();
@@ -656,7 +658,7 @@ class Auth {
   /// either kSignInRequiredError (when there is no authenticated user) or
   /// kSignInFailedError (when an unknown error occurred).
   Future<bool> signInWithGoogleSilently(
-      {void Function(GoogleSignInAccount user) listen,
+      {void Function(GoogleSignInAccount? user)? listen,
       bool suppressErrors = true}) async {
     await _initListen(listen: listen);
 
@@ -668,10 +670,10 @@ class Auth {
         // Attempt to sign in without user interaction
         currentUser = await _mobGoogleSignIn
             ?.signInSilently(suppressErrors: suppressErrors)
-            ?.catchError(setError)
-            ?.then((user) {
+            .catchError((setError, _) => null)
+            .then((user) {
           return user;
-        })?.catchError(setError);
+        }).catchError((setError, _) => null);
       } catch (ex) {
         setError(ex);
         if (ex.toString().indexOf('INTERNAL') > 0) {
@@ -688,18 +690,18 @@ class Auth {
 
   /// Force the user to interactively sign in
   Future<bool> signInWithGoogle({
-    void Function(GoogleSignInAccount event) listen,
-    bool popup,
+    void Function(GoogleSignInAccount? event)? listen,
+    bool? popup,
   }) async {
     await _initListen(listen: listen);
 
     // Attempt to get the currently authenticated user
-    var currentUser = _mobGoogleSignIn.currentUser;
+    var currentUser = _mobGoogleSignIn!.currentUser;
 
     if (currentUser == null) {
       try {
         // Force the user to interactively sign in
-        currentUser = await _mobGoogleSignIn.signIn();
+        currentUser = await _mobGoogleSignIn!.signIn();
       } catch (ex) {
         setError(ex);
         if (ex.toString().indexOf('INTERNAL') > 0) {
@@ -716,7 +718,7 @@ class Auth {
 
   /// Log into Firebase using Google
   Future<bool> signInGoogle({
-    void Function(GoogleSignInAccount user) listen,
+    void Function(GoogleSignInAccount? user)? listen,
     bool firebaseUser = true,
   }) async {
     /// Attempt to sign in without user interaction
@@ -751,8 +753,8 @@ class Auth {
   ///   • `ERROR_INVALID_ACTION_CODE` - If the action code in the link is malformed, expired, or has already been used.
   ///       This can only occur when using [EmailAuthProvider.getCredentialWithLink] to obtain the credential.
   Future<bool> signInWithCredential({
-    @required AuthCredential credential,
-    void Function(User user) listener,
+    required AuthCredential credential,
+    void Function(User? user)? listener,
   }) async {
     // Logged in but add the listener anyway.
     addListener(listener);
@@ -764,11 +766,11 @@ class Auth {
 
     await _initFireBase(listener: listener);
 
-    User user;
+    User? user;
     try {
-      user = await _modAuth.signInWithCredential(credential).then((result) {
+      user = await _modAuth!.signInWithCredential(credential).then((result) {
         _result = result;
-        final usr = _result?.user;
+        final usr = _result?.user!;
         // Assign to the variable, user
         return usr;
       }).catchError((Object ex) {
@@ -804,8 +806,8 @@ class Auth {
   ///   • `ERROR_CUSTOM_TOKEN_MISMATCH` - Invalid configuration.
   ///     Ensure your app's SHA1 is correct in the Firebase console.
   Future<bool> signInWithCustomToken({
-    @required String token,
-    void Function(User user) listener,
+    required String token,
+    void Function(User? user)? listener,
   }) async {
     //
     final loggedIn = alreadyLoggedIn();
@@ -815,11 +817,11 @@ class Auth {
 
     await _initFireBase(listener: listener);
 
-    User user;
+    User? user;
     try {
-      user = await _modAuth.signInWithCustomToken(token).then((result) {
+      user = await _modAuth!.signInWithCustomToken(token).then((result) {
         _result = result;
-        final usr = _result?.user;
+        final usr = _result?.user!;
         return usr;
       }).catchError((Object ex) {
         setError(ex);
@@ -831,7 +833,7 @@ class Auth {
       _result = null;
       user = null;
     }
-    return user?.uid?.isNotEmpty ?? false;
+    return user?.uid.isNotEmpty ?? false;
   }
 
   /// Tries to sign in a user with the given email address and password.
@@ -851,9 +853,9 @@ class Auth {
   ///   • `ERROR_OPERATION_NOT_ALLOWED` - Indicates that Email & Password accounts are not enabled.
   ///
   Future<bool> signInWithEmailAndPassword({
-    @required String email,
-    @required String password,
-    void Function(User user) listener,
+    required String email,
+    required String password,
+    void Function(User? user)? listener,
   }) async {
     // Logged in but add the listener anyway.
     addListener(listener);
@@ -865,13 +867,13 @@ class Auth {
 
     await _initFireBase(listener: listener);
 
-    User user;
+    User? user;
     try {
-      user = await _modAuth
+      user = await _modAuth!
           .signInWithEmailAndPassword(email: email, password: password)
           .then((result) {
         _result = result;
-        final usr = _result?.user;
+        final usr = _result?.user!;
         return usr;
       }).catchError((Object ex) {
         setError(ex);
@@ -883,7 +885,7 @@ class Auth {
       _result = null;
       user = null;
     }
-    return user?.uid?.isNotEmpty ?? false;
+    return user?.uid.isNotEmpty ?? false;
   }
 
   /// Tries to create a new user account with the given email address and password.
@@ -896,22 +898,22 @@ class Auth {
   ///   • `ERROR_INVALID_EMAIL` - If the email address is malformed.
   ///   • `ERROR_EMAIL_ALREADY_IN_USE` - If the email is already in use by a different account.
   Future<bool> createUserWithEmailAndPassword({
-    @required String email,
-    @required String password,
-    void Function(User user) listener,
+    required String email,
+    required String password,
+    void Function(User? user)? listener,
   }) async {
 //    final loggedIn = await alreadyLoggedIn();
 //    if (loggedIn) return loggedIn;
 
     await _initFireBase(listener: listener);
 
-    User user;
+    User? user;
     try {
-      user = await _modAuth
+      user = await _modAuth!
           .createUserWithEmailAndPassword(email: email, password: password)
           .then((result) {
         _result = result;
-        final usr = _result.user;
+        final usr = _result!.user!;
         return usr;
       });
     } catch (ex) {
@@ -919,14 +921,14 @@ class Auth {
       user = null;
       _result = null;
     }
-    return user?.uid?.isNotEmpty ?? false;
+    return user?.uid.isNotEmpty ?? false;
   }
 
   /// Completes the password reset process, given a confirmation code and new
   /// password.
   ///
   ///  - Thrown if the new password is not strong enough.
-  Future<void> confirmPasswordReset({String code, String newPassword}) =>
+  Future<void> confirmPasswordReset({String? code, String? newPassword}) =>
       confirmPasswordReset(code: code, newPassword: newPassword);
 
   /// Returns a UserCredential from the redirect-based sign-in flow.
@@ -936,20 +938,20 @@ class Auth {
   /// returns a [UserCredential] with a null User.
   ///
   /// This method is only support on web platforms.
-  Future<UserCredential> getRedirectResult() => _modAuth.getRedirectResult();
+  Future<UserCredential> getRedirectResult() => _modAuth!.getRedirectResult();
 
   /// Checks if an incoming link is a sign-in with email link.
-  bool isSignInWithEmailLink(String emailLink) {
+  bool isSignInWithEmailLink(String? emailLink) {
     if (emailLink == null || emailLink.isEmpty) {
       return false;
     }
-    return _modAuth.isSignInWithEmailLink(emailLink);
+    return _modAuth!.isSignInWithEmailLink(emailLink);
   }
 
   /// Silently Sign into Firebase with Facebook
   Future<bool> signInWithFacebookSilently({
-    List<FacebookPermission> permissions,
-    void Function(User user) listener,
+    List<FacebookPermission>? permissions,
+    void Function(User? user)? listener,
   }) =>
       signInWithFacebook(
         permissions: permissions,
@@ -962,8 +964,8 @@ class Auth {
   /// https://pub.dev/packages/flutter_facebook_login
   ///
   Future<bool> signInWithFacebook({
-    List<FacebookPermission> permissions,
-    void Function(User user) listener,
+    List<FacebookPermission>? permissions,
+    void Function(User? user)? listener,
     bool silently = false,
   }) async {
     try {
@@ -976,12 +978,12 @@ class Auth {
       return false;
     }
 
-    String token;
+    String? token;
     bool loggedIn;
-    FacebookAccessToken access;
+    FacebookAccessToken? access;
 
     try {
-      loggedIn = await _facebookLogin.isLoggedIn;
+      loggedIn = await _facebookLogin!.isLoggedIn;
     } catch (ex) {
       loggedIn = false;
       setError(ex);
@@ -989,7 +991,7 @@ class Auth {
 
     if (loggedIn || silently) {
       try {
-        access = await _facebookLogin.accessToken;
+        access = await _facebookLogin!.accessToken;
       } catch (ex) {
         setError(ex);
       }
@@ -1004,18 +1006,18 @@ class Auth {
       FacebookLoginResult result;
 
       try {
-        result = await _facebookLogin.logIn(permissions: permissions);
+        result = await _facebookLogin!.logIn(permissions: permissions);
 
         if (result.status == FacebookLoginStatus.success) {
           //
-          token = result?.accessToken?.token ?? '';
+          token = result.accessToken?.token ?? '';
         } else if (result.status == FacebookLoginStatus.cancel) {
           //
           token = '';
         } else if (result.status == FacebookLoginStatus.error) {
           //
           token = '';
-          setError(Exception(result.error.developerMessage));
+          setError(Exception(result.error!.developerMessage));
         }
       } catch (ex) {
         token = '';
@@ -1026,7 +1028,7 @@ class Auth {
 
     var signIn = false;
 
-    if (token.isNotEmpty) {
+    if (token!.isNotEmpty) {
       // No need this is done in signInWithCredential
       _accessToken = token;
       final AuthCredential credential = FacebookAuthProvider.credential(token);
@@ -1038,8 +1040,8 @@ class Auth {
 
   /// SignIn using Facebook.
   Future<bool> signInFacebook({
-    List<FacebookPermission> permissions,
-    void Function(User user) listener,
+    List<FacebookPermission>? permissions,
+    void Function(User? user)? listener,
   }) async {
     /// Attempt to sign in without user interaction
     var logIn = await signInWithFacebookSilently(
@@ -1059,9 +1061,9 @@ class Auth {
 
   /// Silently Sign into Firebase with Twitter
   Future<bool> signInWithTwitterSilently({
-    String key,
-    String secret,
-    void Function(User user) listener,
+    String? key,
+    String? secret,
+    void Function(User? user)? listener,
   }) =>
       signInWithTwitter(
         key: key,
@@ -1076,10 +1078,11 @@ class Auth {
   ///  https://pub.dev/packages/flutter_twitter
   ///
   Future<bool> signInWithTwitter({
-    String key,
-    String secret,
-    void Function(User user) listener,
+    String? key,
+    String? secret,
+    void Function(User? user)? listener,
     bool silently = false,
+    bool forceLogin = false,
     bool suppressAsserts = false,
   }) async {
     key ??= _key ?? '';
@@ -1096,17 +1099,22 @@ class Auth {
       return false;
     }
 
-    String token;
-    var tokenSecret = '';
+    String? token;
+    String? tokenSecret = '';
     var signIn = false;
-    bool inSession;
+//    bool inSession;
 
-    // Disconnect from Twitter first if logged in.
-    await _twitterLogin?.logOut();
+    // // Disconnect from Twitter first if logged in.
+    // await _twitterLogin?.logOut();
     _twitterLogin = null;
 
     try {
-      _twitterLogin = TwitterLogin(consumerKey: key, consumerSecret: secret);
+      // Instantiate a third-party plugin.
+      _twitterLogin = TwitterLogin(
+        apiKey: key,
+        apiSecretKey: secret,
+        redirectURI: 'twittersdk://',
+      );
     } catch (ex) {
       setError(ex);
     }
@@ -1115,52 +1123,54 @@ class Auth {
       return false;
     }
 
+    // try {
+    //   inSession = await _twitterLogin.isSessionActive;
+    // } catch (ex) {
+    //   inSession = false;
+    //   setError(ex);
+    // }
+    //
+    // /// Don't bother logging in if the session is already active.
+    // if (inSession || silently) {
+    //   TwitterSession session;
+    //   try {
+    //     session = await _twitterLogin.currentSession;
+    //   } catch (ex) {
+    //     session = null;
+    //     setError(ex);
+    //   }
+    //   token = session?.token ?? '';
+    //   tokenSecret = session?.secret ?? '';
+    // } else {
+    AuthResult result;
     try {
-      inSession = await _twitterLogin.isSessionActive;
+      result = await _twitterLogin!.login(forceLogin: forceLogin);
+      switch (result.status) {
+        case TwitterLoginStatus.loggedIn:
+          token = result.authToken;
+          tokenSecret = result.authTokenSecret;
+          break;
+        case TwitterLoginStatus.cancelledByUser:
+          token = '';
+          break;
+        case TwitterLoginStatus.error:
+          token = '';
+          setError(Exception(result.errorMessage));
+          break;
+        default:
+          token = '';
+      }
     } catch (ex) {
-      inSession = false;
+      token = '';
       setError(ex);
     }
-
-    /// Don't bother logging in if the session is already active.
-    if (inSession || silently) {
-      TwitterSession session;
-      try {
-        session = await _twitterLogin.currentSession;
-      } catch (ex) {
-        session = null;
-        setError(ex);
-      }
-      token = session?.token ?? '';
-      tokenSecret = session?.secret ?? '';
-    } else {
-      TwitterLoginResult result;
-      try {
-        result = await _twitterLogin.authorize();
-        switch (result.status) {
-          case TwitterLoginStatus.loggedIn:
-            token = result.session.token;
-            tokenSecret = result.session.secret;
-            break;
-          case TwitterLoginStatus.cancelledByUser:
-            token = '';
-            break;
-          case TwitterLoginStatus.error:
-            token = '';
-            setError(Exception(result.errorMessage));
-            break;
-        }
-      } catch (ex) {
-        token = '';
-        setError(ex);
-      }
-    }
+    //   }
 
     /// Sign into Firebase
-    if (token.isNotEmpty) {
+    if (token!.isNotEmpty) {
       _accessToken = token;
       final AuthCredential credential = TwitterAuthProvider.credential(
-          accessToken: token, secret: tokenSecret);
+          accessToken: token, secret: tokenSecret!);
       signIn = await signInWithCredential(
           credential: credential, listener: listener);
     }
@@ -1169,9 +1179,9 @@ class Auth {
 
   /// SignIn using Twitter.
   Future<bool> signInTwitter({
-    String key,
-    String secret,
-    void Function(User user) listener,
+    String? key,
+    String? secret,
+    void Function(User? user)? listener,
   }) async {
     /// Attempt to sign in without user interaction
     var logIn = await signInWithTwitterSilently(
@@ -1210,8 +1220,8 @@ class Auth {
     await signOut();
     // Disconnect from Facebook
     await _facebookLogin?.logOut();
-    // Disconnect from Twitter
-    await _twitterLogin?.logOut();
+    // // Disconnect from Twitter
+    // await _twitterLogin?.logOut();
     // Disconnect from Google
     if (_mobGoogleSignIn?.currentUser != null) {
       await _mobGoogleSignIn?.disconnect();
@@ -1295,7 +1305,7 @@ class Auth {
 
   Future<void> updatePhoneNumber(AuthCredential credential) async {
     try {
-      await _user?.updatePhoneNumber(credential);
+      await _user?.updatePhoneNumber(credential as PhoneAuthCredential);
     } catch (ex) {
       setError(ex);
     }
@@ -1321,13 +1331,13 @@ class Auth {
     if (ex is! Exception) {
       ex = Exception(ex.toString());
     }
-    _eventErrors.add(ex);
+    _eventErrors!.add(ex);
   }
 
   Future<void> _initFireBase({
-    void Function(User user) listener,
-    Function onError,
-    void Function() onDone,
+    void Function(User? user)? listener,
+    Function? onError,
+    void Function()? onDone,
     bool cancelOnError = false,
   }) async {
     // Clear any errors first.
@@ -1337,7 +1347,7 @@ class Auth {
     if (_modAuth == null) {
       await Firebase.initializeApp();
       _modAuth = FirebaseAuth.instance;
-      _firebaseListener = _modAuth.authStateChanges().listen(
+      _firebaseListener = _modAuth!.authStateChanges().listen(
           _listFireBaseListeners,
           onError: onError ?? _eventError,
           onDone: onDone,
@@ -1350,9 +1360,9 @@ class Auth {
   }
 
   Future<void> _initListen({
-    void Function(GoogleSignInAccount account) listen,
-    Function onError,
-    void Function() onDone,
+    void Function(GoogleSignInAccount? account)? listen,
+    Function? onError,
+    void Function()? onDone,
     bool cancelOnError = false,
   }) async {
     // Clear any errors first.
@@ -1360,17 +1370,17 @@ class Auth {
     getEventError();
 
     if (listen != null) {
-      _googleListeners.add(listen);
+      _googleListeners!.add(listen);
     }
 
-    _googleListener ??= _mobGoogleSignIn?.onCurrentUserChanged?.listen(
+    _googleListener ??= _mobGoogleSignIn?.onCurrentUserChanged.listen(
         _listGoogleListeners,
         onError: onError ?? _eventError,
         onDone: onDone,
         cancelOnError: cancelOnError);
   }
 
-  Future<void> _listFireBaseListeners(User user) async {
+  Future<void> _listFireBaseListeners(User? user) async {
     if (_firebaseRunning) {
       return;
     }
@@ -1378,21 +1388,21 @@ class Auth {
     await _setUserFromFireBase(user);
     if (_fireBaseListeners != null) {
       // Odd error at times. gp
-      for (final listener in _fireBaseListeners) {
-        listener(user);
+      for (final listener in _fireBaseListeners!) {
+        listener!(user);
       }
     }
     _firebaseRunning = false;
   }
 
   /// async so you'll come back if there's a setState() called in the listener.
-  Future<void> _listGoogleListeners(GoogleSignInAccount account) async {
+  Future<void> _listGoogleListeners(GoogleSignInAccount? account) async {
     if (_googleRunning) {
       return;
     }
     _googleRunning = true;
     await _setFireBaseUserFromGoogle(account);
-    for (final listener in _googleListeners) {
+    for (final listener in _googleListeners!) {
       listener(account);
     }
     _googleRunning = false;
@@ -1400,11 +1410,12 @@ class Auth {
 
   // firebaseUser = true will check if logged in Firebase
   Future<bool> _setFireBaseUserFromGoogle(
-      GoogleSignInAccount googleUser) async {
-    final auth = await googleUser?.authentication;
+      GoogleSignInAccount? googleUser) async {
+    final GoogleSignInAuthentication? auth =
+        (await googleUser?.authentication)!;
 
-    User user;
-    UserCredential result;
+    User? user;
+    UserCredential? result;
 
     if (auth != null) {
       try {
@@ -1412,8 +1423,8 @@ class Auth {
           accessToken: auth.accessToken,
           idToken: auth.idToken,
         );
-        result = await _modAuth.signInWithCredential(credential);
-        user = result?.user;
+        result = await _modAuth!.signInWithCredential(credential);
+        user = result.user;
       } catch (ex) {
         setError(ex);
         result = null;
@@ -1432,7 +1443,7 @@ class Auth {
     return set;
   }
 
-  Future<bool> _setUserFromFireBase(User user) async {
+  Future<bool> _setUserFromFireBase(User? user) async {
     _user = user;
 
     _isEmailVerified = _user?.emailVerified ?? false;
