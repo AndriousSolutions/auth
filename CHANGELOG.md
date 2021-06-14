@@ -1,4 +1,9 @@
 
+
+## 8.0.0-pre+02
+ June 14, 2021
+- twitter_login 4.0.0 (was 3.0.8)
+
 ## 8.0.0-pre  A pre-release
  April 18, 2021
 - Null Safety

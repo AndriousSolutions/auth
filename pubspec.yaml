@@ -1,7 +1,8 @@
 name: auth
 description: Authorization Library Package to log into Google, Facebook, or by Username and Password.
 
-version: 8.0.0-pre
+# https://pub.dev/packages/auth/
+version: 8.0.0-pre+02
 
 homepage: https://github.com/AndriousSolutions/auth
 repository: https://github.com/AndriousSolutions/auth
@@ -35,7 +36,7 @@ dependencies:
 #  flutter_facebook_login: ^3.0.0
 
   # https://pub.dev/packages/twitter_login/
-  twitter_login: ^3.0.0
+  twitter_login: ^4.0.0
 
 dev_dependencies:
   flutter_test:
