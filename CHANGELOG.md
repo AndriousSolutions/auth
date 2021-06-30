@@ -1,5 +1,11 @@
 
 
+## 8.0.0
+ June 30, 2021
+- All dependencies with null-safety
+- firebase_auth 2.0.0 (was 1.4.1)
+- Corrected README.md
+
 ## 8.0.0-pre+02
  June 14, 2021
 - twitter_login 4.0.0 (was 3.0.8)
