@@ -1,5 +1,9 @@
 
 
+## 8.1.0
+ July 16, 2021
+- firebase_auth 3.0.0 (was 2.0.0)
+
 ## 8.0.0
  June 30, 2021
 - All dependencies with null-safety

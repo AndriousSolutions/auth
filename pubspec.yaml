@@ -2,7 +2,7 @@ name: auth
 description: Authorization Library Package to log into Google, Facebook, or by Username and Password.
 
 # https://pub.dev/packages/auth/
-version: 8.0.0
+version: 8.1.0
 
 homepage: https://github.com/AndriousSolutions/auth
 repository: https://github.com/AndriousSolutions/auth
@@ -21,7 +21,7 @@ dependencies:
   firebase_core: ^1.0.0
 
   # https://pub.dartlang.org/packages/firebase_auth
-  firebase_auth: ^2.0.0
+  firebase_auth: ^3.0.0
 
   # https://pub.dartlang.org/packages/google_sign_in
   google_sign_in: ^5.0.0
