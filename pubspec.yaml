@@ -2,13 +2,13 @@ name: auth
 description: Authorization Library Package to log into Google, Facebook, or by Username and Password.
 
 # https://pub.dev/packages/auth/
-version: 8.1.0
+version: 8.2.0
 
 homepage: https://github.com/AndriousSolutions/auth
 repository: https://github.com/AndriousSolutions/auth
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.18.0 <3.0.0'
 
 dependencies:
   flutter:
@@ -18,10 +18,10 @@ dependencies:
 #  cloud_firestore: ^0.13.0
 
   # https://pub.dev/packages/firebase_core
-  firebase_core: ^1.0.0
+  firebase_core: ^2.0.0
 
   # https://pub.dartlang.org/packages/firebase_auth
-  firebase_auth: ^3.0.0
+  firebase_auth: ^4.0.0
 
   # https://pub.dartlang.org/packages/google_sign_in
   google_sign_in: ^5.0.0
@@ -39,7 +39,15 @@ dependencies:
   twitter_login: ^4.0.0
 
 dev_dependencies:
+  # Supply the example app for testing.
+  example:
+    path: example
+
   flutter_test:
+    sdk: flutter
+
+  # Used during Continuous Integration
+  integration_test:
     sdk: flutter
 
   # Setting up Lint Rules
