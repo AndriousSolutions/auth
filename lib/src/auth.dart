@@ -35,9 +35,9 @@ import 'package:firebase_auth/firebase_auth.dart'
         GoogleAuthProvider,
         TwitterAuthProvider,
         UserInfo;
-import 'package:firebase_core/firebase_core.dart' show Firebase;
-import 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
-    show FirebaseOptions;
+import 'package:firebase_core/firebase_core.dart'
+    show Firebase, FirebaseOptions;
+
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_login_facebook/flutter_login_facebook.dart'
     show
@@ -54,7 +54,7 @@ import 'package:twitter_login/entity/auth_result.dart' show AuthResult;
 import 'package:twitter_login/twitter_login.dart'
     show TwitterLogin, TwitterLoginStatus;
 
-export 'package:firebase_core_platform_interface/firebase_core_platform_interface.dart'
+export 'package:firebase_core/firebase_core.dart'
     show FirebaseOptions, defaultFirebaseAppName, FirebaseException;
 export 'package:flutter_login_facebook/flutter_login_facebook.dart';
 
