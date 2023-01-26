@@ -10,6 +10,11 @@ repository: https://github.com/AndriousSolutions/auth
 environment:
   sdk: '>=2.18.0 <3.0.0'
 
+# Allow these credentials to be uploaded.
+false_secrets:
+  - /example/android/app/google-services.json
+  - /example/lib/firebase_options.dart
+
 dependencies:
   flutter:
     sdk: flutter

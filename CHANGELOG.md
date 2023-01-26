@@ -1,8 +1,9 @@
 
 
-## 8.2.0+01
+## 8.2.0+02
  January 26, 2023
 - Set up correctly the example app
+- Allow credentials to be uploaded for example app.
 
 ## 8.2.0
  December 14, 2022
