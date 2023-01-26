@@ -39,13 +39,16 @@ import 'package:firebase_core/firebase_core.dart'
     show Firebase, FirebaseOptions;
 
 import 'package:flutter/services.dart' show PlatformException;
-import 'package:flutter_login_facebook/flutter_login_facebook.dart'
-    show
-        FacebookAccessToken,
-        FacebookLogin,
-        FacebookLoginResult,
-        FacebookLoginStatus,
-        FacebookPermission;
+
+// import 'package:flutter_login_facebook/flutter_login_facebook.dart'
+//     show
+//         FacebookAccessToken,
+//         FacebookLogin,
+//         FacebookLoginResult,
+//         FacebookLoginStatus,
+//         FacebookPermission;
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+
 import 'package:google_sign_in/google_sign_in.dart'
     show GoogleSignInAuthentication, GoogleSignIn, GoogleSignInAccount;
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart'
@@ -56,7 +59,9 @@ import 'package:twitter_login/twitter_login.dart'
 
 export 'package:firebase_core/firebase_core.dart'
     show FirebaseOptions, defaultFirebaseAppName, FirebaseException;
-export 'package:flutter_login_facebook/flutter_login_facebook.dart';
+
+// export 'package:flutter_login_facebook/flutter_login_facebook.dart';
+export 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 ///
 typedef FireBaseListener = void Function(User? user);
@@ -77,7 +82,7 @@ class Auth {
     String? hostedDomain,
     void Function(GoogleSignInAccount? account)? listen,
     void Function(User? user)? listener,
-    List<FacebookPermission>? permissions,
+    List<String>? facebookPermissions,
     String? key,
     String? secret,
   }) =>
@@ -88,7 +93,7 @@ class Auth {
         hostedDomain: hostedDomain,
         listen: listen,
         listener: listener,
-        permissions: permissions,
+        facebookPermissions: facebookPermissions,
         key: key,
         secret: secret,
       );
@@ -100,7 +105,7 @@ class Auth {
     String? hostedDomain,
     void Function(GoogleSignInAccount? account)? listen,
     void Function(User? user)? listener,
-    List<FacebookPermission>? permissions,
+    List<String>? facebookPermissions,
     String? key,
     String? secret,
   }) {
@@ -130,8 +135,8 @@ class Auth {
       // *Call this after _mobGoogleSignIn
       _initListen(listen: listen);
 
-      if (permissions != null && permissions.isNotEmpty) {
-        _permissions.addAll(permissions);
+      if (facebookPermissions != null && facebookPermissions.isNotEmpty) {
+        _permissions.addAll(facebookPermissions);
       }
 
       if (key != null && key.isNotEmpty) {
@@ -155,7 +160,7 @@ class Auth {
 
   GoogleSignIn? _googleIn;
   FirebaseAuth? _fbAuth;
-  FacebookLogin? _facebookLogin;
+  FacebookAuth? _facebookAuth;
   TwitterLogin? _twitterLogin;
 
   String? _key;
@@ -184,17 +189,12 @@ class Auth {
     await _firebaseListener?.cancel();
     _googleListener = null;
     _firebaseListener = null;
-    _facebookLogin = null;
+    _facebookAuth = null;
     _twitterLogin = null;
   }
 
-  /// Facebook Login List of permissions.
-  List<FacebookPermission> get permissions => _permissions;
-  final List<FacebookPermission> _permissions = [];
-
-  ///
-  String get accessToken => _accessToken ?? '';
-  String? _accessToken = '';
+  final List<String> _permissions = [];
+  // ['public_profile', 'email', 'pages_show_list', 'pages_messaging', 'pages_manage_metadata']
 
   ///
   DateTime get authTime => _idTokenResult?.authTime ?? DateTime.now();
@@ -207,15 +207,15 @@ class Auth {
   String _displayName = '';
 
   ///
+  String get accessToken => _accessToken ?? '';
+  String? _accessToken = '';
+
+  ///
   String get email => _email;
   String _email = '';
 
   ///
   bool get eventErrors => _eventErrors!.isNotEmpty;
-
-  @Deprecated('Use getError() instead.')
-  Exception? get ex => _ex;
-  Exception? _ex;
 
   ///
   DateTime get expirationTime =>
@@ -224,6 +224,16 @@ class Auth {
   ///
 //  @Deprecated('No access to Firebase Auth')
   FirebaseAuth? get firebaseAuth => _fbAuth;
+
+  ///
+  FacebookAuth? get facebookAuth {
+    try {
+      _facebookAuth ??= FacebookAuth.instance;
+    } catch (ex) {
+      setError(ex);
+    }
+    return _facebookAuth;
+  }
 
   ///
   GoogleSignIn? get googleSignIn => _googleIn;
@@ -258,6 +268,7 @@ class Auth {
 
   ///
   String get message => _ex?.toString() ?? '';
+  Exception? _ex;
 
   ///
   String get phoneNumber => _phoneNumber;
@@ -304,7 +315,7 @@ class Auth {
   ///
   String get providerId => _result?.additionalUserInfo?.providerId ?? '';
 
-  ///
+  /// Already logged in as a Firebase user
   bool alreadyLoggedIn([GoogleSignInAccount? googleUser]) {
     User? fireBaseUser;
     if (_modAuth != null) {
@@ -480,9 +491,8 @@ class Auth {
     return add;
   }
 
-  @Deprecated('Use add Listen() instead.')
-
   ///
+  @Deprecated('Use addListen() instead.')
   bool googleListener(GoogleListener f) => addListen(f);
 
   /// Add a Google listener
@@ -586,10 +596,10 @@ class Auth {
   }
 
   ///
-  void removeListen(GoogleListener f) => _googleListeners!.remove(f);
+  bool removeListen(GoogleListener? f) => _googleListeners!.remove(f);
 
   ///
-  void removeListener(FireBaseListener f) => _fireBaseListeners!.remove(f);
+  bool removeListener(FireBaseListener f) => _fireBaseListeners!.remove(f);
 
   /// Initiates email verification for the user.
   Future<void> sendEmailVerification() async {
@@ -653,12 +663,16 @@ class Auth {
     if (loggedIn) {
       return loggedIn;
     }
-    await _initFireBase(listener: listener);
+
+    final init = await _initFireBase(listener: listener);
 
     User? user;
     try {
-      _result = await _modAuth!.signInAnonymously();
-      user = _result?.user;
+      //
+      if (init) {
+        _result = await _modAuth!.signInAnonymously();
+        user = _result?.user;
+      }
     } catch (ex) {
       setError(ex);
       _result = null;
@@ -697,7 +711,7 @@ class Auth {
     if (!logIn) {
       /// Attempt to sign in with Facebook without user interaction
       logIn = await signInWithFacebookSilently(
-        permissions: permissions,
+        permissions: _permissions,
         listener: listener,
       );
     }
@@ -761,10 +775,18 @@ class Auth {
   /// Force the user to interactively sign in
   Future<bool> signInWithGoogle({
     void Function(GoogleSignInAccount? event)? listen,
+    Function? onError,
+    void Function()? onDone,
+    bool cancelOnError = false,
     bool? popup,
   }) async {
     //
-    _initListen(listen: listen);
+    _initListen(
+      listen: listen,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
 
     // Attempt to get the currently authenticated user
     var currentUser = _mobGoogleSignIn!.currentUser;
@@ -783,6 +805,7 @@ class Auth {
         }
       }
     }
+
     // Listenr will call _setFireBaseUserFromGoogle(currentUser);
     return currentUser != null;
   }
@@ -1021,7 +1044,7 @@ class Auth {
 
   /// Silently Sign into Firebase with Facebook
   Future<bool> signInWithFacebookSilently({
-    List<FacebookPermission>? permissions,
+    List<String>? permissions,
     void Function(User? user)? listener,
   }) =>
       signInWithFacebook(
@@ -1035,60 +1058,52 @@ class Auth {
   /// https://pub.dev/packages/flutter_facebook_login
   ///
   Future<bool> signInWithFacebook({
-    List<FacebookPermission>? permissions,
+    List<String>? permissions,
     void Function(User? user)? listener,
-    bool silently = false,
+    bool? silently,
   }) async {
-    try {
-      _facebookLogin ??= FacebookLogin();
-    } catch (ex) {
-      setError(ex);
-    }
-
-    if (_facebookLogin == null) {
+    //
+    if (facebookAuth == null) {
       return false;
     }
 
+    final fbAuth = facebookAuth!;
+
+    silently ??= false;
+
     String? token;
-    bool loggedIn;
-    FacebookAccessToken? access;
+    AccessToken? access;
 
     try {
-      loggedIn = await _facebookLogin!.isLoggedIn;
+      access = await fbAuth.accessToken;
     } catch (ex) {
-      loggedIn = false;
       setError(ex);
     }
+    token = access?.token ?? '';
 
-    if (loggedIn || silently) {
-      try {
-        access = await _facebookLogin!.accessToken;
-      } catch (ex) {
-        setError(ex);
-      }
-      token = access?.token ?? '';
-    } else {
+    if (token.isEmpty && !silently) {
+      //
       permissions ??= _permissions;
 
       if (permissions.isEmpty) {
-        permissions = [FacebookPermission.email];
+        permissions = ['email'];
       }
 
-      FacebookLoginResult result;
+      LoginResult result;
 
       try {
-        result = await _facebookLogin!.logIn(permissions: permissions);
+        result = await fbAuth.login(permissions: permissions);
 
-        if (result.status == FacebookLoginStatus.success) {
+        if (result.status == LoginStatus.success) {
           //
           token = result.accessToken?.token ?? '';
-        } else if (result.status == FacebookLoginStatus.cancel) {
+        } else if (result.status == LoginStatus.cancelled) {
           //
           token = '';
-        } else if (result.status == FacebookLoginStatus.error) {
+        } else if (result.status == LoginStatus.failed) {
           //
           token = '';
-          setError(Exception(result.error!.developerMessage));
+          setError(Exception(result.message));
         }
       } catch (ex) {
         token = '';
@@ -1099,7 +1114,7 @@ class Auth {
 
     var signIn = false;
 
-    if (token!.isNotEmpty) {
+    if (token.isNotEmpty) {
       // No need this is done in signInWithCredential
       _accessToken = token;
       final AuthCredential credential = FacebookAuthProvider.credential(token);
@@ -1111,7 +1126,7 @@ class Auth {
 
   /// SignIn using Facebook.
   Future<bool> signInFacebook({
-    List<FacebookPermission>? permissions,
+    List<String>? permissions,
     void Function(User? user)? listener,
   }) async {
     /// Attempt to sign in without user interaction
@@ -1277,12 +1292,38 @@ class Auth {
   /// If successful, it signs the user out of the app and updates
   /// the onAuthStateChanged stream.
   Future<void> signOut() async {
+    // Set user to null.
     await _setUserFromFireBase(null);
-    // Sign out with FireBase
-    await _modAuth?.signOut();
-    // Sign out with google
-    // Does not disconnect however.
-    await _mobGoogleSignIn?.signOut();
+    try {
+      if (_modAuth?.currentUser != null) {
+        // Sign out with FireBase
+        await _modAuth?.signOut();
+      }
+    } catch (ex) {
+      // ignored
+      setError(ex);
+    }
+    try {
+      final token = await _facebookAuth?.accessToken;
+      if (token != null) {
+        // Sign out of Facebook
+        await _facebookAuth?.logOut();
+      }
+    } catch (ex) {
+      // ignored
+      setError(ex);
+    }
+    try {
+      final signedIn = await _mobGoogleSignIn?.isSignedIn() ?? false;
+      if (signedIn) {
+        // Sign out with google
+        // Does not disconnect however.
+        await _mobGoogleSignIn?.signOut();
+      }
+    } catch (ex) {
+      // ignored
+      setError(ex);
+    }
   }
 
   /// Disconnects the current user from the app and revokes previous
@@ -1290,7 +1331,7 @@ class Auth {
   Future<void> disconnect() async {
     await signOut();
     // Disconnect from Facebook
-    await _facebookLogin?.logOut();
+    await _facebookAuth?.logOut();
     // // Disconnect from Twitter
     // await _twitterLogin?.logOut();
     // Disconnect from Google
@@ -1421,12 +1462,12 @@ class Auth {
 
     if (_modAuth == null) {
       try {
-        if (_firebaseOptions == null) {
-          _modAuth = FirebaseAuth.instance;
-        } else {
-          await Firebase.initializeApp(options: _firebaseOptions);
-          _modAuth = FirebaseAuth.instance;
-        }
+        // if (_firebaseOptions == null) {
+        //   _modAuth = FirebaseAuth.instance;
+        // } else {
+        await Firebase.initializeApp(options: _firebaseOptions);
+        _modAuth = FirebaseAuth.instance;
+        // }
         _firebaseListener = _modAuth!.authStateChanges().listen(
             _listFireBaseListeners,
             onError: onError ?? _eventError,
@@ -1435,6 +1476,7 @@ class Auth {
         // Store in an instance variable
         _fbAuth = _modAuth;
       } catch (e) {
+        setError(e);
         init = false;
       }
     }
@@ -1493,8 +1535,12 @@ class Auth {
   // firebaseUser = true will check if logged in Firebase
   Future<bool> _setFireBaseUserFromGoogle(
       GoogleSignInAccount? googleUser) async {
-    final GoogleSignInAuthentication? auth =
-        (await googleUser?.authentication)!;
+    //
+    GoogleSignInAuthentication? auth;
+
+    if (googleUser != null) {
+      auth = await googleUser.authentication;
+    }
 
     User? user;
     UserCredential? result;

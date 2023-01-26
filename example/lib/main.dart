@@ -9,7 +9,12 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart' show SystemChannels, TextInputType;
 
-import 'package:google_sign_in/google_sign_in.dart' show GoogleUserCircleAvatar;
+/// To log into Firebase
+import 'package:example/firebase_options.dart';
+
+import 'package:flutter/gestures.dart';
+
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(
       const MaterialApp(
@@ -32,6 +37,7 @@ class _SignInDemoState extends State<SignInDemo>
   bool loggedIn = false;
   late TabController tabController;
   String errorMessage = '';
+  TextSpan? errorSpan;
 
   @override
   void initState() {
@@ -44,6 +50,7 @@ class _SignInDemoState extends State<SignInDemo>
           'email',
           'https://www.googleapis.com/auth/contacts.readonly',
         ],
+        firebaseOptions: DefaultFirebaseOptions.currentPlatform,
         listener: (user) {
           loggedIn = user != null;
           errorMessage = auth.message;
@@ -146,7 +153,7 @@ class _SignInDemoState extends State<SignInDemo>
           ElevatedButton(
             onPressed: () {
               auth.signInWithFacebook().then((signIn) {
-                return signInFunc(signIn: signIn);
+                return signInFunc(method: 'Facebook', signIn: signIn);
               }).catchError((Object err) {
                 if (err is! Exception) {
                   err = err.toString();
@@ -163,7 +170,8 @@ class _SignInDemoState extends State<SignInDemo>
                       key: 'ab1cefgh23KlmnOpQ4STUVWx5',
                       secret:
                           'ab1cefgh23KlmnOpQ4STUVWx5y6ZabCDe7ghi8jKLMnOP9qRst')
-                  .then((signIn) => signInFunc(signIn: signIn))
+                  .then(
+                      (signIn) => signInFunc(method: 'Twitter', signIn: signIn))
                   .catchError((Object err) {
                 if (err is! Exception) {
                   err = err.toString();
@@ -177,7 +185,8 @@ class _SignInDemoState extends State<SignInDemo>
             onPressed: () {
               auth
                   .signInWithGoogle()
-                  .then((signIn) => signInFunc(signIn: signIn))
+                  .then(
+                      (signIn) => signInFunc(method: 'Google', signIn: signIn))
                   .catchError((Object err) {
                 if (err is! Exception) {
                   err = err.toString();
@@ -191,7 +200,8 @@ class _SignInDemoState extends State<SignInDemo>
             onPressed: () {
               auth
                   .signInAnonymously()
-                  .then((signIn) => signInFunc(signIn: signIn))
+                  .then((signIn) =>
+                      signInFunc(method: 'Anonymously', signIn: signIn))
                   .catchError((Object err) {
                 if (err is! Exception) {
                   err = err.toString();
@@ -209,7 +219,8 @@ class _SignInDemoState extends State<SignInDemo>
               }
               await auth
                   .signInWithEmailAndPassword(email: ep[0], password: ep[1])
-                  .then((signIn) => signInFunc(signIn: signIn))
+                  .then((signIn) =>
+                      signInFunc(method: 'By email', signIn: signIn))
                   .catchError((Object err) {
                 if (err is! Exception) {
                   err = err.toString();
@@ -225,12 +236,58 @@ class _SignInDemoState extends State<SignInDemo>
   }
 
   // This function is called by every RaisedButton widget.
-  void signInFunc({required bool signIn}) {
+  void signInFunc({required String method, required bool signIn}) {
+    //
     if (signIn) {
       errorMessage = '';
     } else {
       errorMessage = auth.message;
     }
+
+    // Not to be display at this time.
+    errorSpan = null;
+
+    // Specific error messages
+    if (errorMessage.contains('implementation') ||
+        errorMessage.contains('APIKey') ||
+        errorMessage.contains('record')) {
+      //
+      Uri? uri;
+
+      errorMessage = "$method login is not implemented.";
+
+      if (method == 'Facebook') {
+        //
+        uri = Uri.https(
+            'google.com', '/search', {'q': 'Firebase Flutter Facebook'});
+        //           "\r\nhttps://www.google.com/search?q='Firebase' 'Flutter' 'Facebook app'";
+
+      } else if (method == 'Twitter') {
+        //
+        uri = Uri.https(
+            'google.com', '/search', {'q': 'Firebase Flutter Twitter'});
+//            "\r\nhttps://www.google.com/search?q='Firebase' 'Flutter' 'Twitter app'";
+
+      } else if (method == 'By email') {
+        //
+        errorMessage =
+            '$errorMessage\r\nTry  test@testing.com password: 123456';
+
+        uri = Uri.https(
+            'google.com', '/search', {'q': 'Firebase Flutter Email Password'});
+//            "\r\nhttps://www.google.com/search?q='Firebase' 'Flutter' 'Email' 'Password'";
+      }
+
+      if (uri != null) {
+        //
+        errorSpan = TextSpan(
+          text: 'More info.',
+          style: const TextStyle(color: Colors.blue, fontSize: 20),
+          recognizer: TapGestureRecognizer()..onTap = () => launchUrl(uri!),
+        );
+      }
+    }
+
     setState(() {});
   }
 
@@ -246,7 +303,7 @@ class _SignInDemoState extends State<SignInDemo>
           Text('email: ${auth.email}'),
           Text('email verified: ${auth.isEmailVerified}'),
           Text('anonymous login: ${auth.isAnonymous}'),
-          Text('permissions: ${auth.permissions}'),
+//          Text('permissions: ${auth.permissions}'),
           Text('id token: ${auth.idToken}'),
           Text('access token: ${auth.accessToken}'),
           Text('information provider: ${auth.providerId}'),
@@ -258,13 +315,24 @@ class _SignInDemoState extends State<SignInDemo>
       );
 
   Widget get signInErrorMsg => Container(
-      padding: const EdgeInsets.all(10),
-      child: Center(
-          child: RichText(
-              text: TextSpan(
-        text: errorMessage,
-        style: const TextStyle(color: Colors.red),
-      ))));
+        padding: const EdgeInsets.all(10),
+        child: Center(
+          child: Column(
+            children: [
+              RichText(
+                text: TextSpan(
+                  text: errorMessage,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+              if (errorSpan != null) RichText(text: errorSpan!),
+            ],
+          ),
+        ),
+      );
 }
 
 // Creates an alertDialog for the user to enter their email
@@ -278,7 +346,7 @@ Future<List<String>?> dialogBox({
     barrierDismissible: barrierDismissible, // user must tap button!
     builder: (BuildContext context) {
       return CustomAlertDialog(
-        key: key!,
+        key: key,
         title: 'Email & Password',
       );
     },
@@ -290,7 +358,7 @@ class CustomAlertDialog extends StatefulWidget {
   final String title;
 
   @override
-  _CustomAlertDialogState createState() => _CustomAlertDialogState();
+  State createState() => _CustomAlertDialogState();
 }
 
 class _CustomAlertDialogState extends State<CustomAlertDialog> {
@@ -440,4 +508,5 @@ String? validateEmail(String? value) {
   } else if (!regExp.hasMatch(value)) {
     return 'Invalid Email';
   }
+  return null;
 }

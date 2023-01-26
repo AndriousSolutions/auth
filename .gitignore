@@ -77,7 +77,7 @@ tmp/
 /build/
 
 # Web related
-lib/generated_plugin_registrant.dart
+/lib/generated_plugin_registrant.dart
 
 # Symbolication related
 app.*.symbolscd
@@ -91,11 +91,9 @@ unused.txt
 
 # Android related
 google-services.json
-#/android/
 
 # iOS/XCode related
 GoogleService-Info.plist
-/ios/
 
 # Linux related
 /linux/

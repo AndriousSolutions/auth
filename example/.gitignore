@@ -90,7 +90,7 @@ unused.txt
 /obfuscate/
 
 # Android related
-google-services.json
+#google-services.json
 #/android/
 !build.gradle
 

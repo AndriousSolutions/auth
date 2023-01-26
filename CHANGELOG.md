@@ -1,7 +1,12 @@
 
+
+## 8.2.0+01
+ January 26, 2023
+- Set up correctly the example app
+
 ## 8.2.0
  December 14, 2022
-- Firebase setting now directly from Dart: FirebaseOptions
+- Firebase settings now directly from Dart: FirebaseOptions
 - bool _isAnonymous = true;
 - set uid(String? id)
 - Future<ActionCodeInfo>? checkActionCode

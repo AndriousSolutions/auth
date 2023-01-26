@@ -1,19 +1,42 @@
+/gradlew.bat
+/*.iml
+/key.properties
+/local.properties
+/gradlew
+
 /app/src/debug/
-/app/src/main/
+/app/src/main/java/
+/app/src/main/kotlin/
+/app/src/main/res/
 /app/src/profile/
+!google-services.json
+!/app/src/main/AndroidManifest.xml
+
+
 /gradle/
 gradle.properties
 
 gradle-wrapper.jar
 /.gradle
 /captures/
-/gradlew
-/gradlew.bat
-/local.properties
-GeneratedPluginRegistrant.java
 
-# Remember to never publicly share your keystore.
+
+# Never publicly share your keystore.
 # See https://flutter.dev/docs/deployment/android#reference-the-keystore-from-the-app
-key.properties
 **/*.keystore
 **/*.jks
+
+*.class
+.gradle
+
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+/build
+/captures
+GeneratedPluginRegistrant.java
