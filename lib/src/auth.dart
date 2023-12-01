@@ -476,11 +476,17 @@ class Auth {
   /// Updates the current instance with the provided settings.
   ///
   Future<void> setSettings(
-          {bool? appVerificationDisabledForTesting, String? userAccessGroup}) =>
-      _modAuth!.setSettings(
+      {bool? appVerificationDisabledForTesting,
+      String? userAccessGroup}) async {
+    //
+    if (appVerificationDisabledForTesting != null) {
+      //
+      await _modAuth!.setSettings(
         appVerificationDisabledForTesting: appVerificationDisabledForTesting,
         userAccessGroup: userAccessGroup,
       );
+    }
+  }
 
   /// Add a Firebase Listener
   bool addListener(FireBaseListener? f) {
@@ -870,6 +876,7 @@ class Auth {
       }).catchError((Object ex) {
         setError(ex);
         _result = null;
+        return null;
       });
     } catch (ex) {
       setError(ex);
@@ -920,7 +927,7 @@ class Auth {
       }).catchError((Object ex) {
         setError(ex);
         _result = null;
-        user = null;
+        return user = null;
       });
     } catch (ex) {
       setError(ex);
@@ -972,7 +979,7 @@ class Auth {
       }).catchError((Object ex) {
         setError(ex);
         _result = null;
-        user = null;
+        return user = null;
       });
     } catch (ex) {
       setError(ex);

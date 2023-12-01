@@ -1,4 +1,11 @@
 
+## 8.4.0
+December 01, 2023
+- Updated dependencies for null-safety, kotlin, and gradle
+
+## 8.3.0
+ July 18, 2023
+- sdk: '>=2.18.0 <4.0.0'
 
 ## 8.2.0+02
  January 26, 2023

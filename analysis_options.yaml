@@ -80,7 +80,7 @@ linter:
     # - flutter_style_todos # don't need those for now
     - hash_and_equals
     - implementation_imports
-    - invariant_booleans
+    #- invariant_booleans
     - iterable_contains_unrelated_type
     - join_return_with_assignment
     - leading_newlines_in_multiline_strings
@@ -116,7 +116,7 @@ linter:
     - prefer_constructors_over_static_methods
     - prefer_contains
     # - prefer_double_quotes We use single quotes
-    - prefer_equal_for_default_values
+    #- prefer_equal_for_default_values
     # - prefer_expression_function_bodies # conflicts with https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#consider-using--for-short-functions-and-methods
     - prefer_final_fields
     - prefer_final_in_for_each
