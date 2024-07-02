@@ -406,6 +406,13 @@ class Auth {
 
     if (ex is PlatformException) {
       switch (ex.code) {
+        case 'sign_in_failed':
+          // Sign credentials don't match up.
+          if (ex.message!.contains('10:')) {
+            _ex =
+                Exception('\r\nSign in failed!\r\nUpdate google-services.json');
+          }
+          break;
         case 'network_error':
           // The device's Internet is turned off.
           if (ex.message!.contains('7:')) {

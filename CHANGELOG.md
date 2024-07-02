@@ -1,4 +1,8 @@
 
+## 8.5.0
+March 28, 2024
+- Catch error: 'Sign in failed! Update google-services.json'
+
 ## 8.4.0
 December 01, 2023
 - Updated dependencies for null-safety, kotlin, and gradle
