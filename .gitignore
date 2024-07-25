@@ -95,6 +95,13 @@ google-services.json
 # iOS/XCode related
 GoogleService-Info.plist
 
+# Android
+/android/
+# hide access tokens
+gradle.properties
+!/android/app/build.gradle
+!/android/build.gradle
+
 # Linux related
 /linux/
 

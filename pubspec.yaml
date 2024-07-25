@@ -1,11 +1,10 @@
 name: auth
 description: Authorization Library Package to log into Google, Facebook, or by Username and Password.
-
-# https://pub.dev/packages/auth/
-version: 8.5.0
-
 homepage: https://github.com/AndriousSolutions/auth
 repository: https://github.com/AndriousSolutions/auth
+
+# https://pub.dev/packages/auth/
+version: 8.6.0
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -22,11 +21,11 @@ dependencies:
   # https://pub.dev/packages/cloud_firestore
 #  cloud_firestore: ^0.13.0
 
-  # https://pub.dev/packages/firebase_core
-  firebase_core: ^2.0.0 #2.15.0
-
   # https://pub.dartlang.org/packages/firebase_auth
-  firebase_auth: ^4.0.0 #4.7.2
+  firebase_auth: ^5.0.0 #4.7.2
+
+  # https://pub.dev/packages/firebase_core
+  firebase_core: ^3.0.0 #2.15.0
 
   # https://pub.dartlang.org/packages/google_sign_in
   google_sign_in: ^6.0.0 #5.4.4
@@ -56,11 +55,11 @@ dev_dependencies:
   integration_test:
     sdk: flutter
 
-  # Setting up Lint Rules
-  # Most of the recommended lints directly implement the guidelines set out in Effective Dart:
-  # https://dart.dev/guides/language/effective-dart
-  # https://pub.dev/packages/pedantic
-  pedantic: '>=1.0.0 <2.0.0'
+#  # Setting up Lint Rules
+#  # Most of the recommended lints directly implement the guidelines set out in Effective Dart:
+#  # https://dart.dev/guides/language/effective-dart
+#  # https://pub.dev/packages/pedantic
+#  pedantic: '>=1.0.0 <2.0.0'
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

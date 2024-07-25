@@ -1,5 +1,13 @@
 
 ## 8.5.0
+ July 24, 2024
+- Update dependencies:
+  sdk: '>=3.0.0 <4.0.0'
+  firebase_auth 4.16.0     
+  firebase_core 2.24.2     
+  flutter_facebook_auth 6.2.0
+
+## 8.5.0
 March 28, 2024
 - Catch error: 'Sign in failed! Update google-services.json'
 

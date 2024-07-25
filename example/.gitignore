@@ -6,7 +6,7 @@
 # .github
 
 # Ignore except for application packages
-#/pubspec.lock
+pubspec.lock
 
 # Flutter IDE files
 .packages
@@ -90,12 +90,14 @@ unused.txt
 /obfuscate/
 
 # Android related
-#google-services.json
-#/android/
-!build.gradle
+google-services.json
 
 # iOS/XCode related
 GoogleService-Info.plist
+
+/android/
+!build.gradle
+
 /ios/
 
 # Linux related
